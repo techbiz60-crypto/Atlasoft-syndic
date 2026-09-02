@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Cairo', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #effefa;
+  --color-brand-100: #c8fdf0;
+  --color-brand-200: #92fae2;
+  --color-brand-300: #55efd1;
+  --color-brand-400: #22d9bc;
+  --color-brand-500: #0abda3;
+  --color-brand-600: #059685;
+  --color-brand-700: #08786c;
+  --color-brand-800: #0b5f57;
+  --color-brand-900: #0d4e48;
+  --color-brand-950: #002d2a;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[dir='rtl'] body {
+  font-family: var(--font-arabic);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  /* Browsers strip background colors when printing by default (to save
+     ink) unless told otherwise — without this, the report's black floor
+     rows print as plain grey/white text on a blank background. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Wide reports (e.g. the payments report's 12-month grid) print far better
+   in landscape — fewer columns get cut across page breaks. */
+@page {
+  size: landscape;
+  margin: 10mm;
+}

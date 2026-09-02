@@ -1,0 +1,43 @@
+name: atlasoft_syndic
+
+services:
+  app:
+    build:
+      context: ./docker/php
+    container_name: atlasoft_syndic_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - db
+
+  webserver:
+    image: nginx:alpine
+    container_name: atlasoft_syndic_nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: atlasoft_syndic_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: atlasoft_syndic
+      MYSQL_USER: atlasoft_syndic
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3308:3306"
+    volumes:
+      - atlasoft_syndic_mysql_data:/var/lib/mysql
+
+volumes:
+  atlasoft_syndic_mysql_data:
+    name: atlasoft_syndic_mysql_data
