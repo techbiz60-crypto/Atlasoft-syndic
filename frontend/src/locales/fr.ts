@@ -342,6 +342,8 @@ export const fr = {
     title: 'Catégories de dépenses',
     subtitle:
       'Personnalisez les catégories utilisées pour classer vos dépenses (eau, électricité, entretien…).',
+    moveUp: 'Déplacer vers le haut',
+    moveDown: 'Déplacer vers le bas',
     addTitle: 'Ajouter une catégorie',
     editTitle: 'Modifier la catégorie',
     nameLabel: 'Nom',

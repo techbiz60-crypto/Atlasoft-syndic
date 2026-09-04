@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Pencil, Plus, Tag, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Pencil, Plus, Tag, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { canManageFinances, extractErrorMessage, useAuth } from '../context/AuthContext';
@@ -71,6 +71,24 @@ export function ExpenseCategoriesPage() {
       setError(extractErrorMessage(err));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function moveCategory(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= categories.length) {
+      return;
+    }
+
+    const reordered = [...categories];
+    [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
+    setCategories(reordered);
+
+    try {
+      await api.put('/api/expense-categories/reorder', { ids: reordered.map((category) => category.id) });
+    } catch (err) {
+      setError(extractErrorMessage(err));
+      await loadCategories();
     }
   }
 
@@ -156,13 +174,27 @@ export function ExpenseCategoriesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {categories.map((category) => (
+                  {categories.map((category, index) => (
                     <tr key={category.id} className="hover:bg-slate-50/60">
                       <td className="px-5 py-3.5 font-medium text-slate-900">{category.name}</td>
                       <td className="px-5 py-3.5 text-slate-600">{category.expenses_count ?? 0}</td>
                       {isAdmin && (
                         <td className="px-5 py-3.5">
                           <div className="flex justify-end gap-1.5">
+                            <IconButton
+                              onClick={() => moveCategory(index, -1)}
+                              label={t('expenseCategories.moveUp')}
+                              disabled={index === 0}
+                            >
+                              <ArrowUp className="size-4" />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => moveCategory(index, 1)}
+                              label={t('expenseCategories.moveDown')}
+                              disabled={index === categories.length - 1}
+                            >
+                              <ArrowDown className="size-4" />
+                            </IconButton>
                             <IconButton onClick={() => startEdit(category)} label={t('common.edit')}>
                               <Pencil className="size-4" />
                             </IconButton>
@@ -189,18 +221,21 @@ function IconButton({
   onClick,
   label,
   danger = false,
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   label: string;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       title={label}
-      className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
+      className={`flex size-8 items-center justify-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
         danger
           ? 'border-rose-200 text-rose-600 hover:bg-rose-50'
           : 'border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700'

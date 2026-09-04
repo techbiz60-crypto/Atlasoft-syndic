@@ -122,6 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
 
                 Route::post('/expense-categories', [ExpenseCategoryController::class, 'store']);
+                Route::put('/expense-categories/reorder', [ExpenseCategoryController::class, 'reorder']);
                 Route::put('/expense-categories/{expenseCategory}', [ExpenseCategoryController::class, 'update']);
                 Route::delete('/expense-categories/{expenseCategory}', [ExpenseCategoryController::class, 'destroy']);
             });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ExpenseCategory\ReorderExpenseCategoriesRequest;
 use App\Http\Requests\ExpenseCategory\StoreExpenseCategoryRequest;
 use App\Http\Requests\ExpenseCategory\UpdateExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
@@ -12,7 +13,7 @@ class ExpenseCategoryController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(['data' => ExpenseCategory::withCount('expenses')->orderBy('name')->get()]);
+        return response()->json(['data' => ExpenseCategory::withCount('expenses')->orderBy('sort_order')->orderBy('name')->get()]);
     }
 
     public function store(StoreExpenseCategoryRequest $request): JsonResponse
@@ -27,6 +28,15 @@ class ExpenseCategoryController extends Controller
         $expenseCategory->update($request->validated());
 
         return response()->json(['data' => $expenseCategory]);
+    }
+
+    public function reorder(ReorderExpenseCategoriesRequest $request): JsonResponse
+    {
+        foreach ($request->validated('ids') as $index => $id) {
+            ExpenseCategory::whereKey($id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json(['data' => ExpenseCategory::withCount('expenses')->orderBy('sort_order')->orderBy('name')->get()]);
     }
 
     public function destroy(ExpenseCategory $expenseCategory): JsonResponse

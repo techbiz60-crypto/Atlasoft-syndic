@@ -53,7 +53,7 @@ class TreasuryReportController extends Controller
             ->filter(fn ($category) => array_sum($category['amounts']) > 0)
             ->values();
 
-        $expenseCategories = ExpenseCategory::orderBy('name')->get()
+        $expenseCategories = ExpenseCategory::orderBy('sort_order')->orderBy('name')->get()
             ->map(function (ExpenseCategory $category) use ($year) {
                 $amounts = $this->amountsByMonth(
                     Expense::where('expense_category_id', $category->id)->whereYear('paid_at', $year)->get(['amount', 'paid_at']),

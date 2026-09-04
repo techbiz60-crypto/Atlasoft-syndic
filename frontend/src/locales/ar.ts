@@ -352,6 +352,8 @@ export const ar: TranslationResource = {
   expenseCategories: {
     title: 'فئات المصاريف',
     subtitle: 'خصصوا الفئات المستعملة لتصنيف مصاريفكم (الماء، الكهرباء، الصيانة…).',
+    moveUp: 'التحريك للأعلى',
+    moveDown: 'التحريك للأسفل',
     addTitle: 'إضافة فئة',
     editTitle: 'تعديل الفئة',
     nameLabel: 'الاسم',

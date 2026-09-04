@@ -143,6 +143,7 @@ export interface ExpenseCategory {
   id: number;
   residence_id: number;
   name: string;
+  sort_order: number;
   expenses_count?: number;
 }
 
