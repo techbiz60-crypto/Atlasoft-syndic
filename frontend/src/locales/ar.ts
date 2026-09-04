@@ -324,6 +324,8 @@ export const ar: TranslationResource = {
   expenses: {
     title: 'المصاريف',
     subtitleTotal: 'مجموع مصاريف شهر {{month}}/{{year}}: {{total}} درهم',
+    subtitleTotalAllMonths: 'مجموع مصاريف سنة {{year}}: {{total}} درهم',
+    allMonths: 'كل الأشهر',
     manageCategories: 'إدارة الفئات',
     methodLabel: 'طريقة الأداء',
     categoryLabel: 'الفئة',
@@ -334,6 +336,7 @@ export const ar: TranslationResource = {
     receiptLabel: 'المستند المثبت (اختياري)',
     receiptChoose: 'اختيار ملف (PDF، صورة)',
     submitButton: 'تسجيل المصروف',
+    updateButton: 'تعديل المصروف',
     yearLabel: 'السنة',
     monthLabel: 'الشهر',
     colMethod: 'طريقة الأداء',

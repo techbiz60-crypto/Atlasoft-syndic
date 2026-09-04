@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Pencil, Plus, Tag, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,8 @@ export function RevenueCategoriesPage() {
   const [name, setName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const nameFieldRef = useRef<HTMLInputElement>(null);
 
   async function loadCategories() {
     setIsLoading(true);
@@ -42,6 +44,8 @@ export function RevenueCategoriesPage() {
   function startEdit(category: RevenueCategory) {
     setEditingId(category.id);
     setName(category.name);
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    nameFieldRef.current?.focus();
   }
 
   function resetForm() {
@@ -90,6 +94,7 @@ export function RevenueCategoriesPage() {
       <div className="flex flex-col gap-6 lg:flex-row">
         {isAdmin && (
           <form
+            ref={formRef}
             onSubmit={handleSubmit}
             className="flex h-fit w-full flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:w-80 lg:shrink-0"
           >
@@ -100,6 +105,7 @@ export function RevenueCategoriesPage() {
             <Field label={t('revenueCategories.nameLabel')} htmlFor="revenue-category-name">
               <Input
                 id="revenue-category-name"
+                ref={nameFieldRef}
                 placeholder={t('revenueCategories.namePlaceholder')}
                 value={name}
                 onChange={(event) => setName(event.target.value)}

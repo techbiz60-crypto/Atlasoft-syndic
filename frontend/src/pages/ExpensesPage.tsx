@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { FileText, Paperclip, Receipt, Settings, Trash2 } from 'lucide-react';
+import { FileText, Paperclip, Pencil, Receipt, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
@@ -27,7 +27,7 @@ export function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [month, setMonth] = useState<number | 'all'>(now.getMonth() + 1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +41,9 @@ export function ExpensesPage() {
   };
   const [form, setForm] = useState(emptyForm);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const firstFieldRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     api.get<{ data: ExpenseCategory[] }>('/api/expense-categories').then(({ data }) => {
@@ -52,7 +55,9 @@ export function ExpensesPage() {
   async function loadExpenses() {
     setIsLoading(true);
     try {
-      const { data } = await api.get<{ data: Expense[] }>('/api/expenses', { params: { year, month } });
+      const { data } = await api.get<{ data: Expense[] }>('/api/expenses', {
+        params: { year, ...(month !== 'all' ? { month } : {}) },
+      });
       setExpenses(data.data);
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -84,15 +89,40 @@ export function ExpensesPage() {
         payload.append('receipt', receiptFile);
       }
 
-      await api.post('/api/expenses', payload);
-      setForm({ ...emptyForm, expense_category_id: form.expense_category_id });
-      setReceiptFile(null);
+      if (editingId) {
+        payload.append('_method', 'PUT');
+        await api.post(`/api/expenses/${editingId}`, payload);
+      } else {
+        await api.post('/api/expenses', payload);
+      }
+
+      cancelEdit();
       await loadExpenses();
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function startEdit(expense: Expense) {
+    setEditingId(expense.id);
+    setForm({
+      expense_category_id: String(expense.expense_category_id),
+      method: expense.method,
+      paid_at: expense.paid_at.slice(0, 10),
+      label: expense.label ?? '',
+      amount: String(expense.amount),
+    });
+    setReceiptFile(null);
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    firstFieldRef.current?.focus();
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ ...emptyForm, expense_category_id: form.expense_category_id });
+    setReceiptFile(null);
   }
 
   async function handleDelete(id: number) {
@@ -153,7 +183,11 @@ export function ExpensesPage() {
     <div>
       <PageHeader
         title={t('expenses.title')}
-        subtitle={t('expenses.subtitleTotal', { month, year, total })}
+        subtitle={
+          month === 'all'
+            ? t('expenses.subtitleTotalAllMonths', { year, total })
+            : t('expenses.subtitleTotal', { month, year, total })
+        }
         action={
           <Link
             to="/depenses/categories"
@@ -172,11 +206,12 @@ export function ExpensesPage() {
       )}
 
       {isAdmin && (
-        <form onSubmit={handleSubmit} className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form ref={formRef} onSubmit={handleSubmit} className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={t('expenses.methodLabel')} htmlFor="expense-method">
               <Select
                 id="expense-method"
+                ref={firstFieldRef}
                 value={form.method}
                 onChange={(event) => setForm((previous) => ({ ...previous, method: event.target.value as PaymentMethod }))}
               >
@@ -226,7 +261,8 @@ export function ExpensesPage() {
               <Input
                 id="expense-amount"
                 type="number"
-                min={1}
+                min={0.01}
+                step={0.01}
                 value={form.amount}
                 onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
                 required
@@ -251,9 +287,16 @@ export function ExpensesPage() {
             </Field>
           </div>
 
-          <Button type="submit" isLoading={isSubmitting} className="mt-4">
-            {t('expenses.submitButton')}
-          </Button>
+          <div className="mt-4 flex items-center gap-3">
+            <Button type="submit" isLoading={isSubmitting}>
+              {editingId ? t('expenses.updateButton') : t('expenses.submitButton')}
+            </Button>
+            {editingId && (
+              <Button type="button" variant="secondary" onClick={cancelEdit}>
+                {t('common.cancel')}
+              </Button>
+            )}
+          </div>
         </form>
       )}
 
@@ -269,7 +312,13 @@ export function ExpensesPage() {
         </Field>
 
         <Field label={t('expenses.monthLabel')} htmlFor="expense-month-filter">
-          <Select id="expense-month-filter" className="w-40" value={month} onChange={(event) => setMonth(Number(event.target.value))}>
+          <Select
+            id="expense-month-filter"
+            className="w-40"
+            value={month}
+            onChange={(event) => setMonth(event.target.value === 'all' ? 'all' : Number(event.target.value))}
+          >
+            <option value="all">{t('expenses.allMonths')}</option>
             {monthLabels.map((label, index) => (
               <option key={label} value={index + 1}>
                 {label}
@@ -304,6 +353,15 @@ export function ExpensesPage() {
               >
                 <FileText className="size-4" />
               </a>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => startEdit(expense)}
+                className="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"
+                title={t('common.edit')}
+              >
+                <Pencil className="size-4" />
+              </button>
             )}
             {isAdmin && (
               <button

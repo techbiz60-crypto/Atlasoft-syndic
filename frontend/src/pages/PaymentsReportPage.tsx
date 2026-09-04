@@ -148,10 +148,10 @@ export function PaymentsReportPage() {
               <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 <th className="border border-slate-300 px-3 py-2.5 text-start">{t('paymentsReport.colLot')}</th>
                 <th className="border border-slate-300 px-3 py-2.5 text-start">{t('paymentsReport.colOwner')}</th>
-                <th className="w-20 border border-slate-300 px-2 py-2.5 text-end">{t('paymentsReport.colRemaining')}</th>
-                <th className="w-20 border border-slate-300 px-2 py-2.5 text-end">{t('paymentsReport.colPaidOld')}</th>
+                <th className="w-[68px] border border-slate-300 px-2 py-2.5 text-end">{t('paymentsReport.colRemaining')}</th>
+                <th className="w-[68px] border border-slate-300 px-2 py-2.5 text-end">{t('paymentsReport.colPaidOld')}</th>
                 {monthLabels.map((label) => (
-                  <th key={label} className="border border-slate-300 px-2 py-2.5 text-end">
+                  <th key={label} className="w-[68px] border border-slate-300 px-2 py-2.5 text-end">
                     {label}
                   </th>
                 ))}
@@ -170,8 +170,8 @@ export function PaymentsReportPage() {
                     <tr key={row.lot_id} className="hover:bg-slate-50/60">
                       <td className="border border-slate-300 px-3 py-2 font-medium text-slate-900">{row.lot_number}</td>
                       <td className="border border-slate-300 px-3 py-2 whitespace-nowrap text-slate-700">{row.owner_name}</td>
-                      <td className="border border-slate-300 px-2 py-2 text-end text-rose-600">{row.opening_balance_remaining ?? ''}</td>
-                      <td className="border border-slate-300 px-2 py-2 text-end text-brand-700">{row.opening_balance_paid_this_year ?? ''}</td>
+                      <td className="border border-slate-300 bg-rose-50 px-2 py-2 text-end font-medium text-rose-700">{row.opening_balance_remaining ?? ''}</td>
+                      <td className="border border-slate-300 bg-emerald-50 px-2 py-2 text-end font-medium text-emerald-700">{row.opening_balance_paid_this_year ?? ''}</td>
                       {row.months.map((amount, index) => (
                         <td key={index} className="border border-slate-300 px-2 py-2 text-end text-slate-700">
                           {amount ?? ''}

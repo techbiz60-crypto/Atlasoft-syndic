@@ -24,6 +24,7 @@ class Expense extends Model
     {
         return [
             'method' => PaymentMethod::class,
+            'amount' => 'float',
         ];
     }
 

@@ -62,24 +62,24 @@ export function TreasuryPage() {
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : !report ? null : (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-start text-sm">
+          <table className="w-full border-collapse text-start text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <th className="sticky start-0 z-10 min-w-[220px] bg-slate-50 px-4 py-3">{t('treasury.rubrique')}</th>
-                <th className="min-w-[90px] px-3 py-3 text-end">{t('treasury.total')}</th>
+              <tr className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <th className="sticky start-0 z-10 min-w-[220px] border-b-2 border-e-2 border-slate-300 bg-slate-50 px-4 py-3 text-start">
+                  {t('treasury.rubrique')}
+                </th>
+                <th className="min-w-[100px] border-b-2 border-e-2 border-slate-300 bg-slate-100 px-3 py-3 text-end">
+                  {t('treasury.total')}
+                </th>
                 {monthLabels.map((label) => (
-                  <th key={label} className="min-w-[80px] px-3 py-3 text-end">
+                  <th key={label} className="min-w-[76px] border-b-2 border-s border-slate-200 px-3 py-3 text-end">
                     {label}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              <tr className="bg-brand-50/50">
-                <td colSpan={14} className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-brand-700">
-                  {t('treasury.revenuesSection')}
-                </td>
-              </tr>
+              <SectionRow label={t('treasury.revenuesSection')} accent="brand" />
 
               <Row label={t('treasury.cotisationsRow')} amounts={report.cotisations} />
 
@@ -89,11 +89,7 @@ export function TreasuryPage() {
 
               <TotalRow label={t('treasury.totalRevenues')} amounts={report.income_by_month} />
 
-              <tr className="bg-rose-50/50">
-                <td colSpan={14} className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-rose-700">
-                  {t('treasury.expensesSection')}
-                </td>
-              </tr>
+              <SectionRow label={t('treasury.expensesSection')} accent="rose" />
 
               {report.expense_categories.map((category) => (
                 <Row key={category.name} label={category.name} amounts={category.amounts} />
@@ -103,8 +99,8 @@ export function TreasuryPage() {
 
               <TotalRow label={t('treasury.monthBalance')} amounts={report.net_by_month} emphasize />
 
-              <tr>
-                <td className="sticky start-0 bg-white px-4 py-3 font-semibold text-slate-900">
+              <tr className="border-t-2 border-slate-300 bg-slate-50">
+                <td className="sticky start-0 border-e-2 border-slate-300 bg-slate-50 px-4 py-3 font-semibold text-slate-900">
                   {t('treasury.openingBalance', { year })}
                 </td>
                 <td colSpan={13} className="px-3 py-3 text-end font-semibold text-slate-900">
@@ -113,10 +109,14 @@ export function TreasuryPage() {
               </tr>
 
               <tr className="bg-slate-900 text-white">
-                <td className="sticky start-0 bg-slate-900 px-4 py-3 font-bold">{t('treasury.closingBalance')}</td>
-                <td className="px-3 py-3 text-end font-bold">{formatAmount(report.closing_balance)}</td>
+                <td className="sticky start-0 border-e-2 border-slate-700 bg-slate-900 px-4 py-3 font-bold">
+                  {t('treasury.closingBalance')}
+                </td>
+                <td className="border-e-2 border-slate-700 px-3 py-3 text-end font-bold">
+                  {formatAmount(report.closing_balance)}
+                </td>
                 {report.balance_by_month.map((amount, index) => (
-                  <td key={index} className="px-3 py-3 text-end font-bold">
+                  <td key={index} className="border-s border-slate-700 px-3 py-3 text-end font-bold">
                     {formatAmount(amount)}
                   </td>
                 ))}
@@ -133,13 +133,29 @@ export function TreasuryPage() {
   );
 }
 
+function SectionRow({ label, accent }: { label: string; accent: 'brand' | 'rose' }) {
+  const colors =
+    accent === 'brand'
+      ? 'border-s-4 border-brand-600 bg-brand-50/60 text-brand-800'
+      : 'border-s-4 border-rose-600 bg-rose-50/60 text-rose-800';
+  return (
+    <tr className={colors}>
+      <td colSpan={14} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
+        {label}
+      </td>
+    </tr>
+  );
+}
+
 function Row({ label, amounts }: { label: string; amounts: number[] }) {
   return (
     <tr className="hover:bg-slate-50/60">
-      <td className="sticky start-0 bg-white px-4 py-2.5 text-slate-700">{label}</td>
-      <td className="px-3 py-2.5 text-end font-medium text-slate-900">{formatAmount(sum(amounts))}</td>
+      <td className="sticky start-0 border-e-2 border-slate-200 bg-white px-4 py-2.5 text-slate-700">{label}</td>
+      <td className="border-e-2 border-slate-200 bg-slate-50/40 px-3 py-2.5 text-end font-medium text-slate-900">
+        {formatAmount(sum(amounts))}
+      </td>
       {amounts.map((amount, index) => (
-        <td key={index} className="px-3 py-2.5 text-end text-slate-600">
+        <td key={index} className="border-s border-slate-100 px-3 py-2.5 text-end text-slate-600">
           {amount === 0 ? '—' : formatAmount(amount)}
         </td>
       ))}
@@ -149,11 +165,15 @@ function Row({ label, amounts }: { label: string; amounts: number[] }) {
 
 function TotalRow({ label, amounts, emphasize = false }: { label: string; amounts: number[]; emphasize?: boolean }) {
   return (
-    <tr className={emphasize ? 'bg-slate-50' : undefined}>
-      <td className="sticky start-0 bg-inherit px-4 py-2.5 font-semibold text-slate-900">{label}</td>
-      <td className="px-3 py-2.5 text-end font-bold text-slate-900">{formatAmount(sum(amounts))}</td>
+    <tr className={emphasize ? 'border-y border-slate-200 bg-slate-50' : 'bg-slate-50/40'}>
+      <td className="sticky start-0 border-e-2 border-slate-200 bg-inherit px-4 py-2.5 font-semibold text-slate-900">
+        {label}
+      </td>
+      <td className="border-e-2 border-slate-200 bg-inherit px-3 py-2.5 text-end font-bold text-slate-900">
+        {formatAmount(sum(amounts))}
+      </td>
       {amounts.map((amount, index) => (
-        <td key={index} className="px-3 py-2.5 text-end font-semibold text-slate-800">
+        <td key={index} className="border-s border-slate-100 px-3 py-2.5 text-end font-semibold text-slate-800">
           {formatAmount(amount)}
         </td>
       ))}

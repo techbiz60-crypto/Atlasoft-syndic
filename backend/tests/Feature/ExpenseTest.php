@@ -150,4 +150,95 @@ class ExpenseTest extends TestCase
 
         $this->actingAs($adminA)->deleteJson("/api/expenses/{$expenseB->id}")->assertNotFound();
     }
+
+    public function test_admin_can_update_an_expense(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $category = ExpenseCategory::factory()->for($residence)->create();
+        $otherCategory = ExpenseCategory::factory()->for($residence)->create();
+        $expense = Expense::factory()->for($residence)->create([
+            'expense_category_id' => $category->id,
+            'method' => PaymentMethod::Especes,
+            'amount' => 100,
+        ]);
+
+        $response = $this->actingAs($admin)->putJson("/api/expenses/{$expense->id}", [
+            'expense_category_id' => $otherCategory->id,
+            'method' => PaymentMethod::Virement->value,
+            'paid_at' => '2026-08-30',
+            'label' => 'Corrigé',
+            'amount' => 250,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.amount', 250)
+            ->assertJsonPath('data.label', 'Corrigé')
+            ->assertJsonPath('data.category.id', $otherCategory->id);
+
+        $this->assertDatabaseHas('expenses', ['id' => $expense->id, 'amount' => 250, 'expense_category_id' => $otherCategory->id]);
+    }
+
+    public function test_admin_can_replace_an_expense_receipt(): void
+    {
+        Storage::fake();
+
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $category = ExpenseCategory::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->post('/api/expenses', [
+            'expense_category_id' => $category->id,
+            'method' => PaymentMethod::Virement->value,
+            'paid_at' => '2026-08-29',
+            'amount' => 300,
+            'receipt' => UploadedFile::fake()->create('facture.pdf', 100, 'application/pdf'),
+        ])->assertCreated();
+
+        $expense = Expense::first();
+        $oldPath = $expense->receipt_path;
+
+        $this->actingAs($admin)->post("/api/expenses/{$expense->id}", [
+            '_method' => 'PUT',
+            'expense_category_id' => $category->id,
+            'method' => PaymentMethod::Virement->value,
+            'paid_at' => '2026-08-29',
+            'amount' => 300,
+            'receipt' => UploadedFile::fake()->create('nouvelle-facture.pdf', 100, 'application/pdf'),
+        ])->assertOk();
+
+        Storage::assertMissing($oldPath);
+        Storage::assertExists($expense->refresh()->receipt_path);
+    }
+
+    public function test_conseil_member_cannot_update_an_expense(): void
+    {
+        $residence = Residence::factory()->create();
+        $member = User::factory()->for($residence)->conseil()->create();
+        $category = ExpenseCategory::factory()->for($residence)->create();
+        $expense = Expense::factory()->for($residence)->create(['expense_category_id' => $category->id]);
+
+        $this->actingAs($member)->putJson("/api/expenses/{$expense->id}", [
+            'expense_category_id' => $category->id,
+            'method' => PaymentMethod::Especes->value,
+            'paid_at' => '2026-08-29',
+            'amount' => 500,
+        ])->assertForbidden();
+    }
+
+    public function test_admin_cannot_update_an_expense_from_another_residence(): void
+    {
+        $residenceA = Residence::factory()->create();
+        $residenceB = Residence::factory()->create();
+        $adminA = User::factory()->for($residenceA)->create();
+        $categoryB = ExpenseCategory::factory()->for($residenceB)->create();
+        $expenseB = Expense::factory()->for($residenceB)->create(['expense_category_id' => $categoryB->id]);
+
+        $this->actingAs($adminA)->putJson("/api/expenses/{$expenseB->id}", [
+            'expense_category_id' => $categoryB->id,
+            'method' => PaymentMethod::Especes->value,
+            'paid_at' => '2026-08-29',
+            'amount' => 500,
+        ])->assertNotFound();
+    }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AxiosError } from 'axios';
 import { Copy, History, Home, IdCard, KeyRound, ListPlus, Pencil, Plus, Trash2, UserRoundCog, X } from 'lucide-react';
@@ -61,6 +61,8 @@ export function LotsPage() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const firstFieldRef = useRef<HTMLSelectElement>(null);
 
   const [openingBalanceLot, setOpeningBalanceLot] = useState<Lot | null>(null);
   const [openingBalanceForm, setOpeningBalanceForm] = useState({ amount: '', period: '' });
@@ -140,6 +142,8 @@ export function LotsPage() {
       owner_phone: lot.owner_phone ?? '',
       owner_email: lot.owner_email ?? '',
     });
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    firstFieldRef.current?.focus();
   }
 
   function resetForm() {
@@ -674,6 +678,7 @@ export function LotsPage() {
       <div className="flex flex-col gap-6 lg:flex-row">
         {isAdmin && (
           <form
+            ref={formRef}
             onSubmit={handleSubmit}
             className="flex h-fit w-full flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:w-80 lg:shrink-0"
           >
@@ -682,7 +687,7 @@ export function LotsPage() {
             </p>
 
             <Field label={t('lots.buildingLabel')} htmlFor="building-select">
-              <Select id="building-select" value={form.building_id} onChange={updateField('building_id')} required>
+              <Select id="building-select" ref={firstFieldRef} value={form.building_id} onChange={updateField('building_id')} required>
                 <option value="" disabled>
                   {t('lots.chooseBuilding')}
                 </option>

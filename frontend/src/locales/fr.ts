@@ -313,6 +313,8 @@ export const fr = {
   expenses: {
     title: 'Dépenses',
     subtitleTotal: 'Total dépenses du mois {{month}}/{{year}} : {{total}} DH',
+    subtitleTotalAllMonths: 'Total dépenses de l\'année {{year}} : {{total}} DH',
+    allMonths: 'Tous les mois',
     manageCategories: 'Gérer les catégories',
     methodLabel: 'Mode de paiement',
     categoryLabel: 'Catégorie',
@@ -323,6 +325,7 @@ export const fr = {
     receiptLabel: 'Justificatif (optionnel)',
     receiptChoose: 'Choisir un fichier (PDF, image)',
     submitButton: 'Enregistrer la dépense',
+    updateButton: 'Modifier la dépense',
     yearLabel: 'Année',
     monthLabel: 'Mois',
     colMethod: 'Mode de paiement',
