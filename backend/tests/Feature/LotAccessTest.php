@@ -45,6 +45,27 @@ class LotAccessTest extends TestCase
         ]);
     }
 
+    public function test_a_granted_resident_account_can_actually_use_the_api(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence, 'Mohamed Alami');
+
+        $this->actingAs($admin)->postJson("/api/lots/{$lot->id}/access", [
+            'name' => 'Mohamed Alami',
+            'email' => 'mohamed@example.com',
+        ])->assertCreated();
+
+        $resident = User::where('email', 'mohamed@example.com')->firstOrFail();
+
+        // The syndic hands the password over directly, so the account must
+        // be verified on creation — otherwise it clears login but every API
+        // route (all behind the "verified" middleware) rejects it.
+        $this->assertNotNull($resident->email_verified_at);
+
+        $this->actingAs($resident)->getJson('/api/lots')->assertOk();
+    }
+
     public function test_a_lot_cannot_be_granted_access_twice(): void
     {
         $residence = Residence::factory()->create();

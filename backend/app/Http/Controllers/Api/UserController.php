@@ -34,8 +34,13 @@ class UserController extends Controller
             ...$request->validated(),
             'residence_id' => $request->user()->residence_id,
             'password' => Hash::make($generatedPassword),
-            'email_verified_at' => now(),
         ]);
+
+        // Same as for resident access: email_verified_at is not mass
+        // assignable, so it must be set explicitly — otherwise the account
+        // is stuck behind the "verified" middleware with no way out, since
+        // the admin is the one handing over the password.
+        $user->markEmailAsVerified();
 
         return response()->json([
             'data' => $user,

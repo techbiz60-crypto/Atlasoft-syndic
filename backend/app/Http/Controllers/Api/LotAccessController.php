@@ -31,8 +31,15 @@ class LotAccessController extends Controller
             'lot_id' => $lot->id,
             'role' => Role::Coproprietaire,
             'password' => Hash::make($generatedPassword),
-            'email_verified_at' => now(),
         ]);
+
+        // The syndic vouches for the address and hands the password over
+        // directly, so there is no verification email to wait for. This has
+        // to happen outside the create() above: email_verified_at is not
+        // mass assignable, so passing it there is silently dropped and the
+        // account is left unable to use the API (every route is behind the
+        // "verified" middleware).
+        $user->markEmailAsVerified();
 
         return response()->json([
             'data' => $user,
