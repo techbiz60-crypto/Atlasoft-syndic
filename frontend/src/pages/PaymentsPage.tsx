@@ -23,6 +23,8 @@ export function PaymentsPage() {
   const [payments, setPayments] = useState<PaymentWithContext[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [year, setYear] = useState('');
+  const [month, setMonth] = useState('');
+  const [method, setMethod] = useState('');
   const [buildingId, setBuildingId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,12 +36,18 @@ export function PaymentsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const monthLabels = t('common.monthsShort', { returnObjects: true }) as string[];
+  const monthFilterLabels = t('common.monthsFull', { returnObjects: true }) as string[];
 
   async function loadPayments() {
     setIsLoading(true);
     try {
       const { data } = await api.get<{ data: PaymentWithContext[] }>('/api/payments', {
-        params: { year: year || undefined, building_id: buildingId || undefined },
+        params: {
+          year: year || undefined,
+          month: month || undefined,
+          method: method || undefined,
+          building_id: buildingId || undefined,
+        },
       });
       setPayments(data.data);
     } catch (err) {
@@ -56,7 +64,7 @@ export function PaymentsPage() {
   useEffect(() => {
     loadPayments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, buildingId]);
+  }, [year, month, method, buildingId]);
 
   function startEdit(payment: PaymentWithContext) {
     setError(null);
@@ -237,6 +245,26 @@ export function PaymentsPage() {
           </Select>
         </Field>
 
+        <Field label={t('payments.monthLabel')} htmlFor="payment-month-filter">
+          <Select id="payment-month-filter" className="w-40" value={month} onChange={(event) => setMonth(event.target.value)}>
+            <option value="">{t('payments.allMonths')}</option>
+            {monthFilterLabels.map((label, index) => (
+              <option key={label} value={index + 1}>
+                {label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label={t('payments.colMethod')} htmlFor="payment-method-filter">
+          <Select id="payment-method-filter" className="w-40" value={method} onChange={(event) => setMethod(event.target.value)}>
+            <option value="">{t('payments.allMethods')}</option>
+            <option value="virement">{t('common.paymentMethods.virement')}</option>
+            <option value="especes">{t('common.paymentMethods.especes')}</option>
+            <option value="cheque">{t('common.paymentMethods.cheque')}</option>
+          </Select>
+        </Field>
+
         {buildings.length > 1 && (
           <Field label={t('payments.buildingLabel')} htmlFor="payment-building-filter">
             <Select id="payment-building-filter" className="w-48" value={buildingId} onChange={(event) => setBuildingId(event.target.value)}>
@@ -248,6 +276,22 @@ export function PaymentsPage() {
               ))}
             </Select>
           </Field>
+        )}
+
+        {(year || month || method || buildingId) && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setYear('');
+              setMonth('');
+              setMethod('');
+              setBuildingId('');
+            }}
+          >
+            <X className="size-4" />
+            {t('payments.resetFilters')}
+          </Button>
         )}
       </div>
 

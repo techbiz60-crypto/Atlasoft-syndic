@@ -35,6 +35,14 @@ class PaymentController extends Controller
             $query->whereYear('paid_at', $request->integer('year'));
         }
 
+        if ($request->filled('month')) {
+            $query->whereMonth('paid_at', $request->integer('month'));
+        }
+
+        if ($request->filled('method')) {
+            $query->where('method', $request->string('method'));
+        }
+
         if ($request->filled('building_id')) {
             $query->whereHas('fundCall.lot', fn ($q) => $q->where('building_id', $request->integer('building_id')));
         }

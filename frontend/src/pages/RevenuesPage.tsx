@@ -27,7 +27,7 @@ export function RevenuesPage() {
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [categories, setCategories] = useState<RevenueCategory[]>([]);
   const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [month, setMonth] = useState<number | 'all'>(now.getMonth() + 1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +52,9 @@ export function RevenuesPage() {
   async function loadRevenues() {
     setIsLoading(true);
     try {
-      const { data } = await api.get<{ data: Revenue[] }>('/api/revenues', { params: { year, month } });
+      const { data } = await api.get<{ data: Revenue[] }>('/api/revenues', {
+        params: { year, ...(month !== 'all' ? { month } : {}) },
+      });
       setRevenues(data.data);
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -153,7 +155,11 @@ export function RevenuesPage() {
     <div>
       <PageHeader
         title={t('revenues.title')}
-        subtitle={t('revenues.subtitleTotal', { month, year, total })}
+        subtitle={
+          month === 'all'
+            ? t('revenues.subtitleTotalAllMonths', { year, total })
+            : t('revenues.subtitleTotal', { month, year, total })
+        }
         action={
           <Link
             to="/recettes/categories"
@@ -270,7 +276,13 @@ export function RevenuesPage() {
         </Field>
 
         <Field label={t('revenues.monthLabel')} htmlFor="revenue-month-filter">
-          <Select id="revenue-month-filter" className="w-40" value={month} onChange={(event) => setMonth(Number(event.target.value))}>
+          <Select
+            id="revenue-month-filter"
+            className="w-40"
+            value={month}
+            onChange={(event) => setMonth(event.target.value === 'all' ? 'all' : Number(event.target.value))}
+          >
+            <option value="all">{t('revenues.allMonths')}</option>
             {monthLabels.map((label, index) => (
               <option key={label} value={index + 1}>
                 {label}

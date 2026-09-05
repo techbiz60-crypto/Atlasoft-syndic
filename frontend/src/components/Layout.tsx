@@ -46,21 +46,37 @@ export function Layout() {
       isActive ? 'bg-brand-600 text-white shadow-sm shadow-brand-900/20' : 'text-slate-300 hover:bg-white/5 hover:text-white'
     }`;
 
-  const operationsItems: { to: string; end?: boolean; icon: typeof LayoutGrid; label: string }[] = [
-    { to: '/dashboard', end: true, icon: LayoutGrid, label: t('nav.dashboard') },
-    { to: '/tresorerie', icon: Landmark, label: t('nav.treasury') },
-    { to: '/cotisations', icon: Wallet, label: t('nav.cotisations') },
-    { to: '/paiements', icon: ListOrdered, label: t('nav.payments') },
-    { to: '/impayes', icon: AlertTriangle, label: t('nav.impayes') },
-    { to: '/rapports/paiements', icon: FileText, label: t('nav.paymentsReport') },
-    { to: '/depenses', icon: Receipt, label: t('nav.expenses') },
-    { to: '/recettes', icon: TrendingUp, label: t('nav.revenues') },
-  ];
+  type NavItem = { to: string; end?: boolean; icon: typeof LayoutGrid; label: string };
 
-  const settingsItems: { to: string; end?: boolean; icon: typeof LayoutGrid; label: string }[] = [
-    { to: '/buildings', icon: Layers, label: t('nav.buildings') },
-    { to: '/lot-types', icon: Building2, label: t('nav.lotTypes') },
-    { to: '/lots', icon: Users, label: t('nav.lots') },
+  const dashboardItem: NavItem = { to: '/dashboard', end: true, icon: LayoutGrid, label: t('nav.dashboard') };
+  const DashboardIcon = dashboardItem.icon;
+
+  const navGroups: { title: string; items: NavItem[] }[] = [
+    {
+      title: t('nav.sectionCotisations'),
+      items: [
+        { to: '/cotisations', icon: Wallet, label: t('nav.cotisations') },
+        { to: '/paiements', icon: ListOrdered, label: t('nav.payments') },
+        { to: '/impayes', icon: AlertTriangle, label: t('nav.impayes') },
+        { to: '/rapports/paiements', icon: FileText, label: t('nav.paymentsReport') },
+      ],
+    },
+    {
+      title: t('nav.sectionAccounting'),
+      items: [
+        { to: '/tresorerie', icon: Landmark, label: t('nav.treasury') },
+        { to: '/depenses', icon: Receipt, label: t('nav.expenses') },
+        { to: '/recettes', icon: TrendingUp, label: t('nav.revenues') },
+      ],
+    },
+    {
+      title: t('nav.sectionProperty'),
+      items: [
+        { to: '/buildings', icon: Layers, label: t('nav.buildings') },
+        { to: '/lot-types', icon: Building2, label: t('nav.lotTypes') },
+        { to: '/lots', icon: Users, label: t('nav.lots') },
+      ],
+    },
   ];
 
   return (
@@ -103,49 +119,49 @@ export function Layout() {
 
         <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
           <div className="flex flex-col gap-1">
-            {!collapsed && (
-              <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('nav.sectionOperations')}</p>
-            )}
-            {operationsItems.map(({ to, end, icon: Icon, label }) => (
-              <NavLink key={to} to={to} end={end} className={navItemClass} title={collapsed ? label : undefined}>
-                <Icon className="size-4.5 shrink-0" />
-                {!collapsed && label}
-              </NavLink>
-            ))}
+            <NavLink to={dashboardItem.to} end={dashboardItem.end} className={navItemClass} title={collapsed ? dashboardItem.label : undefined}>
+              <DashboardIcon className="size-4.5 shrink-0" />
+              {!collapsed && dashboardItem.label}
+            </NavLink>
           </div>
 
-          <div className="flex flex-col gap-1">
-            {!collapsed && (
-              <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('nav.sectionSettings')}</p>
-            )}
-            {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
-            {settingsItems.map(({ to, end, icon: Icon, label }) => (
-              <NavLink key={to} to={to} end={end} className={navItemClass} title={collapsed ? label : undefined}>
-                <Icon className="size-4.5 shrink-0" />
-                {!collapsed && label}
+          {navGroups.map((group) => (
+            <div key={group.title} className="flex flex-col gap-1">
+              {!collapsed && <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{group.title}</p>}
+              {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
+              {group.items.map(({ to, end, icon: Icon, label }) => (
+                <NavLink key={to} to={to} end={end} className={navItemClass} title={collapsed ? label : undefined}>
+                  <Icon className="size-4.5 shrink-0" />
+                  {!collapsed && label}
+                </NavLink>
+              ))}
+            </div>
+          ))}
+
+          {user.role === 'admin' && (
+            <div className="flex flex-col gap-1">
+              {!collapsed && (
+                <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('nav.sectionAdministration')}</p>
+              )}
+              {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
+              <NavLink to="/abonnement" className={navItemClass} title={collapsed ? t('nav.subscription') : undefined}>
+                <CreditCard className="size-4.5 shrink-0" />
+                {!collapsed && t('nav.subscription')}
               </NavLink>
-            ))}
-            {user.role === 'admin' && (
-              <>
-                <NavLink to="/abonnement" className={navItemClass} title={collapsed ? t('nav.subscription') : undefined}>
-                  <CreditCard className="size-4.5 shrink-0" />
-                  {!collapsed && t('nav.subscription')}
-                </NavLink>
-                <NavLink to="/residence" className={navItemClass} title={collapsed ? t('nav.residenceSettings') : undefined}>
-                  <Settings className="size-4.5 shrink-0" />
-                  {!collapsed && t('nav.residenceSettings')}
-                </NavLink>
-                <NavLink to="/utilisateurs" className={navItemClass} title={collapsed ? t('nav.users') : undefined}>
-                  <UserPlus className="size-4.5 shrink-0" />
-                  {!collapsed && t('nav.users')}
-                </NavLink>
-                <NavLink to="/permissions" className={navItemClass} title={collapsed ? t('nav.rolePermissions') : undefined}>
-                  <ShieldCheck className="size-4.5 shrink-0" />
-                  {!collapsed && t('nav.rolePermissions')}
-                </NavLink>
-              </>
-            )}
-          </div>
+              <NavLink to="/residence" className={navItemClass} title={collapsed ? t('nav.residenceSettings') : undefined}>
+                <Settings className="size-4.5 shrink-0" />
+                {!collapsed && t('nav.residenceSettings')}
+              </NavLink>
+              <NavLink to="/utilisateurs" className={navItemClass} title={collapsed ? t('nav.users') : undefined}>
+                <UserPlus className="size-4.5 shrink-0" />
+                {!collapsed && t('nav.users')}
+              </NavLink>
+              <NavLink to="/permissions" className={navItemClass} title={collapsed ? t('nav.rolePermissions') : undefined}>
+                <ShieldCheck className="size-4.5 shrink-0" />
+                {!collapsed && t('nav.rolePermissions')}
+              </NavLink>
+            </div>
+          )}
         </nav>
 
         <div className="mt-6 border-t border-white/10 pt-4">
