@@ -29,8 +29,19 @@ class BuildingController extends Controller
         return response()->json(['data' => $building]);
     }
 
+    /**
+     * The foreign keys cascade (building → lots → fund calls → payments), so
+     * deleting a building that still has apartments would silently wipe out
+     * their whole billing and payment history.
+     */
     public function destroy(Building $building): JsonResponse
     {
+        abort_if(
+            $building->lots()->exists(),
+            422,
+            'Impossible de supprimer un immeuble qui contient encore des appartements.'
+        );
+
         $building->delete();
 
         return response()->json(status: 204);

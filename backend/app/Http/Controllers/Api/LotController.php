@@ -77,8 +77,26 @@ class LotController extends Controller
         return response()->json(['data' => $lot->load(['lotType', 'building', 'openingBalance', 'residentUser'])]);
     }
 
+    /**
+     * fund_calls.lot_id cascades down to payments, so an apartment that has
+     * ever been billed can't be deleted without destroying its financial
+     * history — the same goes for a resident account attached to it, which
+     * would otherwise be left orphaned (users.lot_id is nullOnDelete).
+     */
     public function destroy(Lot $lot): JsonResponse
     {
+        abort_if(
+            $lot->fundCalls()->exists(),
+            422,
+            'Impossible de supprimer un appartement qui a déjà des appels de fonds ou des paiements enregistrés.'
+        );
+
+        abort_if(
+            $lot->residentUser()->exists(),
+            422,
+            'Impossible de supprimer un appartement auquel un accès copropriétaire est rattaché. Supprimez d\'abord cet accès.'
+        );
+
         $lot->delete();
 
         return response()->json(status: 204);

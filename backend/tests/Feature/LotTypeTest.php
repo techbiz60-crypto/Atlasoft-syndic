@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Building;
+use App\Models\Lot;
 use App\Models\LotType;
 use App\Models\Residence;
 use App\Models\User;
@@ -106,6 +108,22 @@ class LotTypeTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('lot_types', ['id' => $lotType->id]);
+    }
+
+    public function test_a_lot_type_still_used_by_apartments_cannot_be_deleted(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        $this->actingAs($admin)
+            ->deleteJson("/api/lot-types/{$lotType->id}")
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('lot_types', ['id' => $lotType->id]);
+        $this->assertDatabaseHas('lots', ['id' => $lot->id]);
     }
 
     public function test_admin_cannot_update_a_lot_type_belonging_to_another_residence(): void

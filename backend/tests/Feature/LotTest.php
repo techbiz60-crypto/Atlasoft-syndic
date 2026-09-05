@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Building;
+use App\Models\FundCall;
 use App\Models\Lot;
 use App\Models\LotType;
 use App\Models\Residence;
 use App\Models\Subscription;
 use App\Models\User;
+use App\PaymentMethod;
 use App\SubscriptionPlan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -317,5 +319,55 @@ class LotTest extends TestCase
             'building_id' => $building->id,
             'lots' => [['number' => 'A1', 'lot_type_id' => $lotType->id, 'owner_name' => 'Owner One']],
         ])->assertForbidden();
+    }
+
+    public function test_admin_can_delete_a_lot_that_has_no_billing_history(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        $this->actingAs($admin)->deleteJson("/api/lots/{$lot->id}")->assertNoContent();
+
+        $this->assertDatabaseMissing('lots', ['id' => $lot->id]);
+    }
+
+    public function test_a_lot_with_fund_calls_cannot_be_deleted(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200]);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => now(),
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $this->actingAs($admin)->deleteJson("/api/lots/{$lot->id}")->assertStatus(422);
+
+        $this->assertDatabaseHas('lots', ['id' => $lot->id]);
+        $this->assertDatabaseHas('payments', ['fund_call_id' => $fundCall->id]);
+    }
+
+    public function test_a_lot_with_a_resident_account_cannot_be_deleted(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        User::factory()->for($residence)->coproprietaire()->create(['lot_id' => $lot->id]);
+
+        $this->actingAs($admin)->deleteJson("/api/lots/{$lot->id}")->assertStatus(422);
+
+        $this->assertDatabaseHas('lots', ['id' => $lot->id]);
     }
 }

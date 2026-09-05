@@ -40,8 +40,19 @@ class LotTypeController extends Controller
         return response()->json(['data' => $lotType->load('rates')]);
     }
 
+    /**
+     * lots.lot_type_id cascades, so deleting a type still in use would take
+     * the apartments themselves down with it (and their fund calls and
+     * payments below that).
+     */
     public function destroy(LotType $lotType): JsonResponse
     {
+        abort_if(
+            $lotType->lots()->exists(),
+            422,
+            'Impossible de supprimer un type déjà utilisé par des appartements.'
+        );
+
         $lotType->delete();
 
         return response()->json(status: 204);
