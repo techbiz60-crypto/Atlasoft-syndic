@@ -185,6 +185,8 @@ export interface TreasuryReport {
   year: number;
   opening_balance: number;
   cotisations: number[];
+  /** Same payments grouped by the month they cover, not the month they were received. Informational: never part of the balance. */
+  cotisations_for_year: number[];
   revenue_categories: TreasuryCategoryLine[];
   expense_categories: TreasuryCategoryLine[];
   income_by_month: number[];

@@ -83,6 +83,8 @@ export function TreasuryPage() {
 
               <Row label={t('treasury.cotisationsRow')} amounts={report.cotisations} />
 
+              <InfoRow label={t('treasury.cotisationsForYearRow')} amounts={report.cotisations_for_year} />
+
               {report.revenue_categories.map((category) => (
                 <Row key={category.name} label={category.name} amounts={category.amounts} />
               ))}
@@ -143,6 +145,24 @@ function SectionRow({ label, accent }: { label: string; accent: 'brand' | 'rose'
       <td colSpan={14} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
         {label}
       </td>
+    </tr>
+  );
+}
+
+/**
+ * Reference figure shown alongside the cash lines but deliberately outside
+ * every total — styled so it can't be mistaken for money that moved.
+ */
+function InfoRow({ label, amounts }: { label: string; amounts: number[] }) {
+  return (
+    <tr className="bg-slate-50/60 italic text-slate-500">
+      <td className="sticky start-0 border-e-2 border-slate-200 bg-slate-50 px-4 py-2.5 ps-8 text-xs">{label}</td>
+      <td className="border-e-2 border-slate-200 px-3 py-2.5 text-end text-xs font-medium">{formatAmount(sum(amounts))}</td>
+      {amounts.map((amount, index) => (
+        <td key={index} className="border-s border-slate-100 px-3 py-2.5 text-end text-xs">
+          {amount === 0 ? '—' : formatAmount(amount)}
+        </td>
+      ))}
     </tr>
   );
 }

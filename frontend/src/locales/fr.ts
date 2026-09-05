@@ -462,6 +462,7 @@ export const fr = {
     total: 'Total',
     revenuesSection: 'Recettes',
     cotisationsRow: 'Cotisations encaissées',
+    cotisationsForYearRow: 'Cotisations de l\'exercice, par mois couvert (information, hors solde)',
     totalRevenues: 'Total recettes',
     expensesSection: 'Dépenses',
     totalExpenses: 'Total dépenses',

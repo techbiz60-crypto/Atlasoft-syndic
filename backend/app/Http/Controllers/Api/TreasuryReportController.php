@@ -41,6 +41,21 @@ class TreasuryReportController extends Controller
             'paid_at',
         );
 
+        // Same payments seen the other way round: by the month they cover
+        // rather than the month the money arrived. Reported for information
+        // only (an AG needs to know what the year itself brought in, and a
+        // resident may well have paid 2026 during 2025) — deliberately kept
+        // out of every total below, because the closing balance has to stay
+        // real cash that can be reconciled against the bank.
+        $cotisationsForYear = array_fill(0, 12, 0);
+
+        Payment::with('fundCall')
+            ->whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', false)->whereYear('period', $year))
+            ->get()
+            ->each(function (Payment $payment) use (&$cotisationsForYear) {
+                $cotisationsForYear[$payment->fundCall->period->month - 1] += $payment->amount;
+            });
+
         $revenueCategories = RevenueCategory::orderBy('name')->get()
             ->map(function (RevenueCategory $category) use ($year) {
                 $amounts = $this->amountsByMonth(
@@ -94,6 +109,7 @@ class TreasuryReportController extends Controller
             'year' => $year,
             'opening_balance' => $residence->opening_balance,
             'cotisations' => $cotisationsByMonth,
+            'cotisations_for_year' => $cotisationsForYear,
             'revenue_categories' => $revenueCategories,
             'expense_categories' => $expenseCategories,
             'income_by_month' => $incomeByMonth,

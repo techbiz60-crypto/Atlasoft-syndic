@@ -470,6 +470,7 @@ export const ar: TranslationResource = {
     total: 'المجموع',
     revenuesSection: 'المداخيل',
     cotisationsRow: 'الاشتراكات المحصلة',
+    cotisationsForYearRow: 'اشتراكات السنة حسب الشهر المغطى (للعلم فقط، خارج الرصيد)',
     totalRevenues: 'مجموع المداخيل',
     expensesSection: 'المصاريف',
     totalExpenses: 'مجموع المصاريف',
