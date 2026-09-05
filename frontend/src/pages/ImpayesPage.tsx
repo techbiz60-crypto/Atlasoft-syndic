@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
@@ -8,6 +8,11 @@ import { PageHeader } from '../components/PageHeader';
 import { ErrorAlert } from '../components/ui/Alert';
 import { DataTable } from '../components/ui/DataTable';
 import type { DataTableColumn } from '../components/ui/DataTable';
+import { Field, Select } from '../components/ui/Input';
+
+type DelayFilter = 'all' | '3months' | '1year';
+
+const delayThresholds: Record<DelayFilter, number> = { all: 0, '3months': 3, '1year': 12 };
 
 function buildReminderLink(lot: UnpaidLot): string | null {
   if (!lot.owner_phone) {
@@ -28,6 +33,7 @@ export function ImpayesPage() {
   const [unpaidLots, setUnpaidLots] = useState<UnpaidLot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [delayFilter, setDelayFilter] = useState<DelayFilter>('all');
 
   useEffect(() => {
     api
@@ -36,6 +42,11 @@ export function ImpayesPage() {
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setIsLoading(false));
   }, []);
+
+  const filteredLots = useMemo(
+    () => unpaidLots.filter((lot) => lot.months_late >= delayThresholds[delayFilter]),
+    [unpaidLots, delayFilter],
+  );
 
   const columns: DataTableColumn<UnpaidLot>[] = [
     {
@@ -105,9 +116,23 @@ export function ImpayesPage() {
         </div>
       )}
 
+      <div className="mb-5 max-w-[14rem]">
+        <Field label={t('impayes.delayFilterLabel')} htmlFor="impayes-delay-filter">
+          <Select
+            id="impayes-delay-filter"
+            value={delayFilter}
+            onChange={(event) => setDelayFilter(event.target.value as DelayFilter)}
+          >
+            <option value="all">{t('impayes.delayFilterAll')}</option>
+            <option value="3months">{t('impayes.delayFilter3Months')}</option>
+            <option value="1year">{t('impayes.delayFilter1Year')}</option>
+          </Select>
+        </Field>
+      </div>
+
       <DataTable
         columns={columns}
-        data={unpaidLots}
+        data={filteredLots}
         rowKey={(lot) => lot.lot_id}
         previousLabel={t('common.previous')}
         nextLabel={t('common.next')}

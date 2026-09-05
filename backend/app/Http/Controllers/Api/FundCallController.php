@@ -66,41 +66,103 @@ class FundCallController extends Controller
 
     public function unpaid(): JsonResponse
     {
-        $lots = Lot::with(['building', 'fundCalls.payments'])->get();
+        $lots = Lot::with(['building', 'lotType.rates', 'fundCalls.payments'])->get();
+        $currentMonth = Carbon::now()->startOfMonth();
 
         $unpaid = $lots
-            ->map(function (Lot $lot) {
-                $outstandingCalls = $lot->fundCalls->filter(fn (FundCall $call) => $call->status !== 'paid');
-
-                if ($outstandingCalls->isEmpty()) {
-                    return null;
-                }
-
-                $lastPayment = $lot->fundCalls
-                    ->flatMap(fn (FundCall $call) => $call->payments)
-                    ->sortByDesc('paid_at')
-                    ->first();
-
-                return [
-                    'lot_id' => $lot->id,
-                    'lot_number' => $lot->number,
-                    'building_name' => $lot->building->name,
-                    'owner_name' => $lot->owner_name,
-                    'owner_phone' => $lot->owner_phone,
-                    'total_due' => $outstandingCalls->sum(fn (FundCall $call) => $call->amount - $call->paid_amount),
-                    'months_late' => $outstandingCalls->count(),
-                    'oldest_unpaid_period' => $outstandingCalls->min('period')?->toDateString(),
-                    'last_payment_date' => $lastPayment?->paid_at->toDateString(),
-                    'opening_balance_due' => $outstandingCalls
-                        ->filter(fn (FundCall $call) => $call->is_opening_balance)
-                        ->sum(fn (FundCall $call) => $call->amount - $call->paid_amount),
-                ];
-            })
+            ->map(fn (Lot $lot) => $this->unpaidSummaryFor($lot, $currentMonth))
             ->filter()
             ->sortByDesc('months_late')
             ->values();
 
         return response()->json(['data' => $unpaid]);
+    }
+
+    /**
+     * A lot's debt is its unpaid opening balance (which stands for everything
+     * owed before the current year) plus every month of the current year up
+     * to and including the current one — whether that month was actually
+     * billed or not, since fund calls are only created lazily and a month
+     * with no row is still owed.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function unpaidSummaryFor(Lot $lot, Carbon $currentMonth): ?array
+    {
+        $openingBalanceCall = $lot->fundCalls->first(fn (FundCall $call) => $call->is_opening_balance);
+        $openingBalanceDue = $openingBalanceCall && $openingBalanceCall->status !== 'paid'
+            ? $openingBalanceCall->amount - $openingBalanceCall->paid_amount
+            : 0;
+
+        $callsByMonth = $lot->fundCalls
+            ->reject(fn (FundCall $call) => $call->is_opening_balance)
+            ->keyBy(fn (FundCall $call) => $call->period->format('Y-m'));
+
+        $unpaidMonths = collect();
+        $monthlyDue = 0;
+
+        // Any month already billed and still unpaid counts, whatever its year.
+        foreach ($callsByMonth as $call) {
+            if ($call->period->lte($currentMonth) && $call->status !== 'paid') {
+                $monthlyDue += $call->amount - $call->paid_amount;
+                $unpaidMonths->push($call->period->copy());
+            }
+        }
+
+        // Months of the current year that were never billed at all, projected
+        // at the lot's rate. Starts after the opening balance's reference
+        // month when that falls inside the year, so the lump sum and the
+        // monthly projection never overlap.
+        $projectionStart = $openingBalanceCall
+            ? $openingBalanceCall->period->copy()->addMonthNoOverflow()->startOfMonth()->max($currentMonth->copy()->startOfYear())
+            : $currentMonth->copy()->startOfYear();
+
+        for ($cursor = $projectionStart->copy(); $cursor->lte($currentMonth); $cursor->addMonthNoOverflow()) {
+            if ($callsByMonth->has($cursor->format('Y-m'))) {
+                continue;
+            }
+
+            $rate = $lot->lotType->rateAt($cursor)?->amount;
+
+            if ($rate > 0) {
+                $monthlyDue += $rate;
+                $unpaidMonths->push($cursor->copy());
+            }
+        }
+
+        $totalDue = $monthlyDue + $openingBalanceDue;
+
+        if ($totalDue <= 0) {
+            return null;
+        }
+
+        $lastPayment = $lot->fundCalls
+            ->flatMap(fn (FundCall $call) => $call->payments)
+            ->sortByDesc('paid_at')
+            ->first();
+
+        // "Months late" is the WHOLE debt (monthly arrears + opening balance
+        // combined) converted to an equivalent number of months at the lot's
+        // current monthly rate — one unified figure.
+        $monthlyRate = $lot->lotType->rateAt($currentMonth)?->amount;
+        $monthsLate = $monthlyRate > 0
+            ? (int) ceil($totalDue / $monthlyRate)
+            : $unpaidMonths->count() + ($openingBalanceDue > 0 ? 1 : 0);
+
+        return [
+            'lot_id' => $lot->id,
+            'lot_number' => $lot->number,
+            'building_name' => $lot->building->name,
+            'owner_name' => $lot->owner_name,
+            'owner_phone' => $lot->owner_phone,
+            'total_due' => $totalDue,
+            'months_late' => $monthsLate,
+            'oldest_unpaid_period' => $openingBalanceDue > 0
+                ? $openingBalanceCall->period->toDateString()
+                : $unpaidMonths->min()?->toDateString(),
+            'last_payment_date' => $lastPayment?->paid_at->toDateString(),
+            'opening_balance_due' => $openingBalanceDue,
+        ];
     }
 
     public function show(FundCall $fundCall): JsonResponse
@@ -138,8 +200,19 @@ class FundCallController extends Controller
         return response()->json(['message' => trim(Artisan::output())]);
     }
 
+    /**
+     * payments.fund_call_id cascades, so deleting a fund call that has been
+     * paid would erase those payments too — the payment must be deleted
+     * explicitly first, which is an auditable action of its own.
+     */
     public function destroy(FundCall $fundCall): JsonResponse
     {
+        abort_if(
+            $fundCall->payments()->exists(),
+            422,
+            'Impossible de supprimer un appel de fonds qui a déjà reçu des paiements.'
+        );
+
         $fundCall->delete();
 
         return response()->json(status: 204);
