@@ -26,6 +26,7 @@ import { SubscriptionPage } from './pages/SubscriptionPage';
 import { UsersPage } from './pages/UsersPage';
 import { RolePermissionsPage } from './pages/RolePermissionsPage';
 import { PaymentsReportPage } from './pages/PaymentsReportPage';
+import { AgReportPage } from './pages/AgReportPage';
 
 function App() {
   const { i18n } = useTranslation();
@@ -53,6 +54,7 @@ function App() {
               <Route path="/paiements" element={<PaymentsPage />} />
               <Route path="/impayes" element={<ImpayesPage />} />
               <Route path="/rapports/paiements" element={<PaymentsReportPage />} />
+              <Route path="/rapports/ag" element={<AgReportPage />} />
               <Route path="/depenses" element={<ExpensesPage />} />
               <Route path="/depenses/categories" element={<ExpenseCategoriesPage />} />
               <Route path="/recettes" element={<RevenuesPage />} />

@@ -5,6 +5,7 @@ import {
   Building2,
   CreditCard,
   FileText,
+  Gavel,
   Landmark,
   Layers,
   LayoutGrid,
@@ -67,6 +68,7 @@ export function Layout() {
         { to: '/tresorerie', icon: Landmark, label: t('nav.treasury') },
         { to: '/depenses', icon: Receipt, label: t('nav.expenses') },
         { to: '/recettes', icon: TrendingUp, label: t('nav.revenues') },
+        { to: '/rapports/ag', icon: Gavel, label: t('nav.agReport') },
       ],
     },
     {

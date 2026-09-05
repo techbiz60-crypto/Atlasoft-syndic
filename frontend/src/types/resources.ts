@@ -185,8 +185,6 @@ export interface TreasuryReport {
   year: number;
   opening_balance: number;
   cotisations: number[];
-  /** Same payments grouped by the month they cover, not the month they were received. Informational: never part of the balance. */
-  cotisations_for_year: number[];
   revenue_categories: TreasuryCategoryLine[];
   expense_categories: TreasuryCategoryLine[];
   income_by_month: number[];
@@ -194,6 +192,22 @@ export interface TreasuryReport {
   net_by_month: number[];
   balance_by_month: number[];
   closing_balance: number;
+}
+
+export interface AgReport {
+  year: number;
+  residence_name: string;
+  /** Grouped by the month each payment covers, not the month it was received. */
+  cotisations: number[];
+  opening_balance_recovered: number[];
+  revenue_categories: TreasuryCategoryLine[];
+  expense_categories: TreasuryCategoryLine[];
+  income_by_month: number[];
+  expenses_by_month: number[];
+  net_by_month: number[];
+  total_income: number;
+  total_expenses: number;
+  result: number;
 }
 
 export interface PaymentsReportRow {
