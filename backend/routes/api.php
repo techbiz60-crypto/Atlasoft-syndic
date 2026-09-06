@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FundCallController;
+use App\Http\Controllers\Api\LedgerController;
 use App\Http\Controllers\Api\LotAccessController;
 use App\Http\Controllers\Api\LotController;
 use App\Http\Controllers\Api\LotOwnerController;
@@ -59,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/revenue-categories', [RevenueCategoryController::class, 'index']);
 
         Route::get('/treasury-report', [TreasuryReportController::class, 'index']);
+        Route::get('/ledger', [LedgerController::class, 'index']);
         Route::get('/reports/payments', [ReportController::class, 'payments']);
         Route::get('/reports/ag', [AgReportController::class, 'index']);
         Route::get('/subscription', [SubscriptionController::class, 'show']);

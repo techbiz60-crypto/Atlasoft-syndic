@@ -194,6 +194,28 @@ export interface TreasuryReport {
   closing_balance: number;
 }
 
+export interface LedgerMovement {
+  id: string;
+  date: string;
+  direction: 'in' | 'out';
+  kind: 'cotisation' | 'opening_balance' | 'revenue' | 'expense';
+  label: string;
+  reference: string;
+  method: PaymentMethod;
+  amount: number;
+  /** Balance after this movement, in chronological order. */
+  balance: number;
+}
+
+export interface Ledger {
+  year: number;
+  opening_balance: number;
+  closing_balance: number;
+  total_in: number;
+  total_out: number;
+  data: LedgerMovement[];
+}
+
 export interface AgReport {
   year: number;
   residence_name: string;

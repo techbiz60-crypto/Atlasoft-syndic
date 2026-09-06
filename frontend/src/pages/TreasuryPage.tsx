@@ -7,6 +7,9 @@ import type { TreasuryReport } from '../types/resources';
 import { PageHeader } from '../components/PageHeader';
 import { Field, Select } from '../components/ui/Input';
 import { ErrorAlert } from '../components/ui/Alert';
+import { TreasuryLedger } from '../components/TreasuryLedger';
+
+type Tab = 'summary' | 'ledger';
 
 const currentYear = new Date().getFullYear();
 const yearOptions = [currentYear - 1, currentYear, currentYear + 1];
@@ -23,35 +26,98 @@ export function TreasuryPage() {
   const { t } = useTranslation();
   const monthLabels = t('common.monthsShort', { returnObjects: true }) as string[];
   const [year, setYear] = useState(currentYear);
+  const [tab, setTab] = useState<Tab>('summary');
   const [report, setReport] = useState<TreasuryReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (tab !== 'summary') {
+      return;
+    }
+
     setIsLoading(true);
     api
       .get<TreasuryReport>('/api/treasury-report', { params: { year } })
       .then(({ data }) => setReport(data))
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setIsLoading(false));
-  }, [year]);
+  }, [year, tab]);
 
   return (
     <div>
       <PageHeader title={t('treasury.title')} subtitle={t('treasury.subtitle')} />
 
-      <div className="mb-5 max-w-[10rem]">
-        <Field label={t('treasury.yearLabel')} htmlFor="treasury-year">
-          <Select id="treasury-year" value={year} onChange={(event) => setYear(Number(event.target.value))}>
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </Select>
-        </Field>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-[10rem]">
+          <Field label={t('treasury.yearLabel')} htmlFor="treasury-year">
+            <Select id="treasury-year" value={year} onChange={(event) => setYear(Number(event.target.value))}>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+
+        <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+          <TabButton isActive={tab === 'summary'} onClick={() => setTab('summary')}>
+            {t('treasury.tabSummary')}
+          </TabButton>
+          <TabButton isActive={tab === 'ledger'} onClick={() => setTab('ledger')}>
+            {t('treasury.tabLedger')}
+          </TabButton>
+        </div>
       </div>
 
+      {tab === 'ledger' ? (
+        <TreasuryLedger year={year} />
+      ) : (
+        <TreasurySummary
+          report={report}
+          error={error}
+          isLoading={isLoading}
+          monthLabels={monthLabels}
+          year={year}
+          t={t}
+        />
+      )}
+    </div>
+  );
+}
+
+function TabButton({ isActive, onClick, children }: { isActive: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
+        isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function TreasurySummary({
+  report,
+  error,
+  isLoading,
+  monthLabels,
+  year,
+  t,
+}: {
+  report: TreasuryReport | null;
+  error: string | null;
+  isLoading: boolean;
+  monthLabels: string[];
+  year: number;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div>
       {error && (
         <div className="mb-4">
           <ErrorAlert>{error}</ErrorAlert>
