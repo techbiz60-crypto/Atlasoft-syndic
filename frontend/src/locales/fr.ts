@@ -470,12 +470,10 @@ export const fr = {
     totalIncome: 'Total produits',
     totalExpenses: 'Total charges',
     resultRow: "Résultat de l'exercice",
-    cashOpeningRow: 'Solde en caisse au 1er janvier {{year}}',
-    cashClosingRow: 'Solde en caisse au 31 décembre {{year}}',
-    timingDifferenceRow:
-      "Écart d'encaissement : cotisations de l'exercice réglées une autre année (payées d'avance ou en retard)",
+    openingRow: "Report des exercices antérieurs au 1er janvier {{year}}",
+    closingRow: "Solde de l'exercice au 31 décembre {{year}}",
     basisNote:
-      "Les cotisations sont comptées sur le mois qu'elles couvrent, quelle que soit leur date d'encaissement — un règlement de 2026 effectué en 2025 apparaît donc bien ici. Les recettes et dépenses sont comptées à leur date. Le solde au 1er janvier reprend la clôture de l'exercice précédent ; comme le résultat est calculé sur les mois couverts et non sur les encaissements, l'écart d'encaissement fait le lien avec le solde en caisse réel, celui que vous rapprochez de la banque.",
+      "Les cotisations sont comptées sur le mois qu'elles couvrent, quelle que soit leur date d'encaissement — un règlement de 2026 effectué en 2025 apparaît donc bien ici. Les recettes et dépenses sont comptées à leur date. Le report d'ouverture suit la même règle : c'est le cumul des exercices précédents, donc report + résultat = solde de clôture. Ce solde est celui de l'exercice, pas la position de caisse : pour le montant rapprochable avec la banque, voir la page Trésorerie.",
     emptyTitle: 'Aucun mouvement sur cet exercice',
     emptyDesc: 'Choisissez une autre année ou enregistrez des paiements, recettes et dépenses.',
   },

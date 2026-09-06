@@ -232,12 +232,10 @@ export interface AgReport {
   total_income: number;
   total_expenses: number;
   result: number;
-  /** Cash held on 1 January — the previous year's closing balance. */
+  /** What previous exercises left behind, on the same covered-month basis. */
   opening_balance: number;
-  /** Cash actually held on 31 December. */
-  cash_closing_balance: number;
-  /** opening + result − cash closing: dues cashed in a different year than the one they cover. */
-  timing_difference: number;
+  /** opening_balance + result. */
+  closing_balance: number;
 }
 
 export interface PaymentsReportRow {

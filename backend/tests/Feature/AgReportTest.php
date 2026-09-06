@@ -168,11 +168,11 @@ class AgReportTest extends TestCase
         $previous = $this->actingAs($admin)->getJson('/api/reports/ag?year=2025')->assertOk();
         $current = $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')->assertOk();
 
-        $this->assertSame($previous->json('cash_closing_balance'), $current->json('opening_balance'));
+        $this->assertSame($previous->json('closing_balance'), $current->json('opening_balance'));
         $current->assertJsonPath('opening_balance', 1200);
     }
 
-    public function test_dues_cashed_in_another_year_are_reported_as_a_timing_difference(): void
+    public function test_dues_settled_early_do_not_inflate_the_balance_carried_into_their_year(): void
     {
         $residence = Residence::factory()->create(['opening_balance' => 0]);
         $admin = User::factory()->for($residence)->create();
@@ -187,20 +187,49 @@ class AgReportTest extends TestCase
             'method' => PaymentMethod::Virement,
         ]);
 
+        // 2025 earned nothing: that money belongs to the 2026 exercise, so
+        // it must not be carried into 2026 as an opening balance on top of
+        // being counted as a 2026 product.
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2025')->assertOk()
+            ->assertJsonPath('result', 0)
+            ->assertJsonPath('closing_balance', 0);
+
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')->assertOk()
+            ->assertJsonPath('opening_balance', 0)
+            ->assertJsonPath('result', 200)
+            ->assertJsonPath('closing_balance', 200);
+    }
+
+    public function test_opening_plus_result_always_equals_the_closing_balance(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 1000]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-03-01']);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-03-10',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $expenseCategory = ExpenseCategory::factory()->for($residence)->create();
+        Expense::factory()->for($residence)->create([
+            'expense_category_id' => $expenseCategory->id,
+            'paid_at' => '2026-04-20',
+            'amount' => 100,
+        ]);
+
         $response = $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')->assertOk();
 
-        // The exercise earned 200, but no cash moved during 2026 — so the
-        // gap between opening + result and the real closing balance is 200.
-        $response
-            ->assertJsonPath('opening_balance', 200)
-            ->assertJsonPath('result', 200)
-            ->assertJsonPath('cash_closing_balance', 200)
-            ->assertJsonPath('timing_difference', 200);
-
+        // The whole point of keeping the report on one basis: there is
+        // never a gap to explain between the two balances.
         $this->assertSame(
-            $response->json('opening_balance') + $response->json('result') - $response->json('timing_difference'),
-            $response->json('cash_closing_balance'),
+            $response->json('opening_balance') + $response->json('result'),
+            $response->json('closing_balance'),
         );
+        $response->assertJsonPath('closing_balance', 1100);
     }
 
     public function test_report_only_includes_the_admins_own_residence(): void

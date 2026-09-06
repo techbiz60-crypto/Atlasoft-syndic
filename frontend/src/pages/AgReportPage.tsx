@@ -96,7 +96,7 @@ export function AgReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              <BalanceRow label={t('agReport.cashOpeningRow', { year: report.year })} value={report.opening_balance} />
+              <BalanceRow label={t('agReport.openingRow', { year: report.year })} value={report.opening_balance} />
 
               <SectionRow label={t('agReport.incomeSection')} accent="brand" />
 
@@ -132,17 +132,9 @@ export function AgReportPage() {
                 ))}
               </tr>
 
-              {report.timing_difference !== 0 && (
-                <BalanceRow
-                  label={t('agReport.timingDifferenceRow')}
-                  value={-report.timing_difference}
-                  muted
-                />
-              )}
-
               <BalanceRow
-                label={t('agReport.cashClosingRow', { year: report.year })}
-                value={report.cash_closing_balance}
+                label={t('agReport.closingRow', { year: report.year })}
+                value={report.closing_balance}
                 emphasize
               />
             </tbody>

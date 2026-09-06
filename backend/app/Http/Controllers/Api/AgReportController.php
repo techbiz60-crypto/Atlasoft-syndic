@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Payment;
+use App\Models\Residence;
 use App\Models\Revenue;
 use App\Models\RevenueCategory;
 use Illuminate\Http\JsonResponse;
@@ -31,6 +32,32 @@ class AgReportController extends Controller
      * @param  Collection<int, object>  $records
      * @return array<int, float> 12-slot array (index 0 = January)
      */
+    /**
+     * What every exercise before this one left behind, read on the same
+     * basis as the report itself: cotisations against the months they
+     * cover, the rest against their own date. So a 2026 due settled during
+     * 2025 belongs to 2026 here, and does not inflate the balance carried
+     * into it.
+     */
+    private function balanceBeforeYear(Residence $residence, int $year): float
+    {
+        $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
+
+        $cotisations = Payment::whereHas(
+            'fundCall',
+            fn ($query) => $query->where('is_opening_balance', false)->whereDate('period', '<', $startOfYear)
+        )->sum('amount');
+
+        $openingBalanceRecovered = Payment::whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true))
+            ->whereDate('paid_at', '<', $startOfYear)
+            ->sum('amount');
+
+        $revenues = Revenue::whereDate('received_at', '<', $startOfYear)->sum('amount');
+        $expenses = Expense::whereDate('paid_at', '<', $startOfYear)->sum('amount');
+
+        return $residence->opening_balance + $cotisations + $openingBalanceRecovered + $revenues - $expenses;
+    }
+
     private function amountsByMonth($records, string $dateColumn): array
     {
         $amounts = array_fill(0, 12, 0);
@@ -120,17 +147,11 @@ class AgReportController extends Controller
         $totalExpenses = array_sum($expensesByMonth);
         $result = $totalIncome - $totalExpenses;
 
-        // Cash actually held at each end of the year, so the AG can tie its
-        // exercise back to the bank. Opening equals the previous year's
-        // closing by construction (same shared method as Trésorerie).
-        $openingBalance = $residence->cashBalanceBefore(Carbon::create($year, 1, 1)->startOfDay());
-        $cashClosingBalance = $residence->cashBalanceBefore(Carbon::create($year + 1, 1, 1)->startOfDay());
-
-        // Opening + result only lands on the real cash balance when every
-        // cotisation was cashed in the year it covers. Dues paid early or
-        // late make up the rest, and hiding that gap would leave the
-        // treasurer unable to answer "why doesn't this match the bank?".
-        $timingDifference = $openingBalance + $result - $cashClosingBalance;
+        // Everything here stays on the exercise basis, opening balance
+        // included — so opening + result always equals closing, with no gap
+        // to explain. The cash position that reconciles with the bank is
+        // Trésorerie's job, not this report's.
+        $openingBalance = $this->balanceBeforeYear($residence, $year);
 
         return response()->json([
             'year' => $year,
@@ -146,8 +167,7 @@ class AgReportController extends Controller
             'total_expenses' => $totalExpenses,
             'result' => $result,
             'opening_balance' => $openingBalance,
-            'cash_closing_balance' => $cashClosingBalance,
-            'timing_difference' => $timingDifference,
+            'closing_balance' => $openingBalance + $result,
         ]);
     }
 }
