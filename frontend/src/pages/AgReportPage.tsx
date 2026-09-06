@@ -96,6 +96,8 @@ export function AgReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
+              <BalanceRow label={t('agReport.cashOpeningRow', { year: report.year })} value={report.opening_balance} />
+
               <SectionRow label={t('agReport.incomeSection')} accent="brand" />
 
               <Row label={t('agReport.cotisationsRow')} amounts={report.cotisations} />
@@ -129,6 +131,20 @@ export function AgReportPage() {
                   </td>
                 ))}
               </tr>
+
+              {report.timing_difference !== 0 && (
+                <BalanceRow
+                  label={t('agReport.timingDifferenceRow')}
+                  value={-report.timing_difference}
+                  muted
+                />
+              )}
+
+              <BalanceRow
+                label={t('agReport.cashClosingRow', { year: report.year })}
+                value={report.cash_closing_balance}
+                emphasize
+              />
             </tbody>
           </table>
 
@@ -138,6 +154,48 @@ export function AgReportPage() {
 
       {!isLoading && report && report.total_income === 0 && report.total_expenses === 0 && <EmptyState />}
     </div>
+  );
+}
+
+/**
+ * A single figure spanning the month columns — a balance is a position at
+ * one point in time, so spreading it across months would be meaningless.
+ */
+function BalanceRow({
+  label,
+  value,
+  emphasize = false,
+  muted = false,
+}: {
+  label: string;
+  value: number;
+  emphasize?: boolean;
+  muted?: boolean;
+}) {
+  if (emphasize) {
+    return (
+      <tr className="bg-slate-900 text-white">
+        <td className="sticky start-0 border-e-2 border-slate-700 bg-slate-900 px-4 py-3 font-bold">{label}</td>
+        <td colSpan={13} className="px-3 py-3 text-end font-bold">
+          {formatAmount(value)} DH
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr className={`border-y border-slate-200 ${muted ? 'bg-slate-50/60 italic text-slate-500' : 'bg-slate-50'}`}>
+      <td
+        className={`sticky start-0 border-e-2 border-slate-200 bg-inherit px-4 py-3 ${
+          muted ? 'text-xs' : 'font-semibold text-slate-900'
+        }`}
+      >
+        {label}
+      </td>
+      <td colSpan={13} className={`px-3 py-3 text-end ${muted ? 'text-xs' : 'font-semibold text-slate-900'}`}>
+        {formatAmount(value)} DH
+      </td>
+    </tr>
   );
 }
 

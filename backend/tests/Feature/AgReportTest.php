@@ -151,6 +151,58 @@ class AgReportTest extends TestCase
             ->assertJsonPath('result', 250);
     }
 
+    public function test_the_opening_balance_is_the_previous_years_closing_balance(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 1000]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2025-09-01']);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2025-09-10',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $previous = $this->actingAs($admin)->getJson('/api/reports/ag?year=2025')->assertOk();
+        $current = $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')->assertOk();
+
+        $this->assertSame($previous->json('cash_closing_balance'), $current->json('opening_balance'));
+        $current->assertJsonPath('opening_balance', 1200);
+    }
+
+    public function test_dues_cashed_in_another_year_are_reported_as_a_timing_difference(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 0]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        // 2026 dues, but the money came in during 2025.
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-01-01']);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2025-12-20',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')->assertOk();
+
+        // The exercise earned 200, but no cash moved during 2026 — so the
+        // gap between opening + result and the real closing balance is 200.
+        $response
+            ->assertJsonPath('opening_balance', 200)
+            ->assertJsonPath('result', 200)
+            ->assertJsonPath('cash_closing_balance', 200)
+            ->assertJsonPath('timing_difference', 200);
+
+        $this->assertSame(
+            $response->json('opening_balance') + $response->json('result') - $response->json('timing_difference'),
+            $response->json('cash_closing_balance'),
+        );
+    }
+
     public function test_report_only_includes_the_admins_own_residence(): void
     {
         $residenceA = Residence::factory()->create();

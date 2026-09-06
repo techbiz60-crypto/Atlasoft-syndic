@@ -115,9 +115,26 @@ class AgReportController extends Controller
             $netByMonth[] = $incomeByMonth[$i] - $expensesByMonth[$i];
         }
 
+        $residence = $request->user()->residence;
+        $totalIncome = array_sum($incomeByMonth);
+        $totalExpenses = array_sum($expensesByMonth);
+        $result = $totalIncome - $totalExpenses;
+
+        // Cash actually held at each end of the year, so the AG can tie its
+        // exercise back to the bank. Opening equals the previous year's
+        // closing by construction (same shared method as Trésorerie).
+        $openingBalance = $residence->cashBalanceBefore(Carbon::create($year, 1, 1)->startOfDay());
+        $cashClosingBalance = $residence->cashBalanceBefore(Carbon::create($year + 1, 1, 1)->startOfDay());
+
+        // Opening + result only lands on the real cash balance when every
+        // cotisation was cashed in the year it covers. Dues paid early or
+        // late make up the rest, and hiding that gap would leave the
+        // treasurer unable to answer "why doesn't this match the bank?".
+        $timingDifference = $openingBalance + $result - $cashClosingBalance;
+
         return response()->json([
             'year' => $year,
-            'residence_name' => $request->user()->residence->name,
+            'residence_name' => $residence->name,
             'cotisations' => $cotisations,
             'opening_balance_recovered' => $openingBalanceRecovered,
             'revenue_categories' => $revenueCategories,
@@ -125,9 +142,12 @@ class AgReportController extends Controller
             'income_by_month' => $incomeByMonth,
             'expenses_by_month' => $expensesByMonth,
             'net_by_month' => $netByMonth,
-            'total_income' => array_sum($incomeByMonth),
-            'total_expenses' => array_sum($expensesByMonth),
-            'result' => array_sum($incomeByMonth) - array_sum($expensesByMonth),
+            'total_income' => $totalIncome,
+            'total_expenses' => $totalExpenses,
+            'result' => $result,
+            'opening_balance' => $openingBalance,
+            'cash_closing_balance' => $cashClosingBalance,
+            'timing_difference' => $timingDifference,
         ]);
     }
 }
