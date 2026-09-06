@@ -27,13 +27,7 @@ class LedgerController extends Controller
         $residence = $request->user()->residence;
         $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
 
-        // Everything that happened before the year is only needed as a
-        // starting point, so it is summed in SQL rather than listed.
-        $balance = $residence->opening_balance
-            + Payment::whereDate('paid_at', '<', $startOfYear)->sum('amount')
-            + Revenue::whereDate('received_at', '<', $startOfYear)->sum('amount')
-            - Expense::whereDate('paid_at', '<', $startOfYear)->sum('amount');
-
+        $balance = $residence->cashBalanceBefore($startOfYear);
         $openingBalance = $balance;
 
         $movements = $this->movementsForYear($year)

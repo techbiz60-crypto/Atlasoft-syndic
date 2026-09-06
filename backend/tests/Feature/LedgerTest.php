@@ -97,6 +97,16 @@ class LedgerTest extends TestCase
         $admin = User::factory()->for($residence)->create();
         $lot = $this->createLot($residence);
 
+        // Collected during a previous year: both screens have to carry it
+        // forward, or they disagree on where 2026 starts.
+        $earlier = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2025-09-01']);
+        $earlier->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2025-09-10',
+            'method' => PaymentMethod::Especes,
+        ]);
+
         $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-03-01']);
         $fundCall->payments()->create([
             'residence_id' => $residence->id,

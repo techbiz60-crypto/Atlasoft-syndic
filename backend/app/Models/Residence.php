@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 #[Fillable(['name', 'address', 'lots_count', 'bank_rib', 'opening_balance'])]
 class Residence extends Model
@@ -37,6 +38,28 @@ class Residence extends Model
                 ]);
             }
         });
+    }
+
+    /**
+     * Cash actually held just before the given date: what the residence
+     * started with, plus every movement that happened before it.
+     *
+     * opening_balance alone is only the balance at the very beginning —
+     * reading it as the opening balance of an arbitrary year silently drops
+     * everything collected in the years between. Both the treasury summary
+     * and the ledger go through here so they can never drift apart.
+     */
+    public function cashBalanceBefore(Carbon $date): float
+    {
+        $sumBefore = fn (string $model, string $dateColumn) => $model::withoutGlobalScopes()
+            ->where('residence_id', $this->id)
+            ->whereDate($dateColumn, '<', $date)
+            ->sum('amount');
+
+        return $this->opening_balance
+            + $sumBefore(Payment::class, 'paid_at')
+            + $sumBefore(Revenue::class, 'received_at')
+            - $sumBefore(Expense::class, 'paid_at');
     }
 
     public function users(): HasMany

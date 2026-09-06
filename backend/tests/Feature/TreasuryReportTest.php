@@ -65,6 +65,32 @@ class TreasuryReportTest extends TestCase
             ->assertJsonPath('closing_balance', 1250);
     }
 
+    public function test_the_opening_balance_carries_forward_previous_years(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 1000]);
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->withMonthlyAmount(200)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2025-09-01']);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2025-09-10',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/treasury-report?year=2026');
+
+        // opening_balance is the cash held on 1 January 2026, not the
+        // residence's very first balance — the 200 collected during 2025
+        // has to be carried forward.
+        $response->assertOk()
+            ->assertJsonPath('opening_balance', 1200)
+            ->assertJsonPath('closing_balance', 1200);
+    }
+
     public function test_report_only_includes_the_admins_own_residence(): void
     {
         $residenceA = Residence::factory()->create();

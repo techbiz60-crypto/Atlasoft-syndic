@@ -81,7 +81,12 @@ class TreasuryReportController extends Controller
 
         $netByMonth = [];
         $balanceByMonth = [];
-        $runningBalance = $residence->opening_balance;
+
+        // Cash held on 1 January of the displayed year, not the residence's
+        // very first balance — otherwise browsing a later year silently
+        // drops everything collected in the years in between.
+        $openingBalance = $residence->cashBalanceBefore(Carbon::create($year, 1, 1)->startOfDay());
+        $runningBalance = $openingBalance;
 
         for ($i = 0; $i < 12; $i++) {
             $net = $incomeByMonth[$i] - $expensesByMonth[$i];
@@ -92,7 +97,7 @@ class TreasuryReportController extends Controller
 
         return response()->json([
             'year' => $year,
-            'opening_balance' => $residence->opening_balance,
+            'opening_balance' => $openingBalance,
             'cotisations' => $cotisationsByMonth,
             'revenue_categories' => $revenueCategories,
             'expense_categories' => $expenseCategories,
