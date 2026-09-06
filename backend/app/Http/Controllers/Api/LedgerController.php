@@ -59,20 +59,31 @@ class LedgerController extends Controller
      */
     private function movementsForYear(int $year): Collection
     {
+        // Paying several months at once creates one Payment row per month
+        // under a shared batch_id. That is an internal allocation — the bank
+        // saw a single movement, so the ledger shows a single line too,
+        // exactly like the Paiements screen already does.
         $payments = Payment::with('fundCall.lot')
             ->whereYear('paid_at', $year)
             ->get()
-            ->map(fn (Payment $payment) => [
-                'id' => 'payment-'.$payment->id,
-                'date' => $payment->paid_at->toDateString(),
-                'direction' => 'in',
-                'kind' => $payment->fundCall->is_opening_balance ? 'opening_balance' : 'cotisation',
-                'label' => $payment->owner_name ?? $payment->fundCall->lot->owner_name,
-                'reference' => $payment->fundCall->lot->number,
-                'method' => $payment->method->value,
-                'amount' => $payment->amount,
-                'sort_key' => $payment->paid_at->toDateString().'-1-'.$payment->id,
-            ]);
+            ->groupBy(fn (Payment $payment) => $payment->batch_id ?? 'single-'.$payment->id)
+            ->map(function (Collection $group) {
+                $first = $group->first();
+
+                return [
+                    'id' => 'payment-'.$first->id,
+                    'date' => $first->paid_at->toDateString(),
+                    'direction' => 'in',
+                    'kind' => $first->fundCall->is_opening_balance ? 'opening_balance' : 'cotisation',
+                    'label' => $first->owner_name ?? $first->fundCall->lot->owner_name,
+                    'reference' => $first->fundCall->lot->number,
+                    'method' => $first->method->value,
+                    'amount' => $group->sum('amount'),
+                    'months_covered' => $group->count(),
+                    'sort_key' => $first->paid_at->toDateString().'-1-'.$first->id,
+                ];
+            })
+            ->values();
 
         $revenues = Revenue::with('category')
             ->whereYear('received_at', $year)

@@ -203,6 +203,8 @@ export interface LedgerMovement {
   reference: string;
   method: PaymentMethod;
   amount: number;
+  /** Number of months a single payment covered; absent for revenues and expenses. */
+  months_covered?: number;
   /** Balance after this movement, in chronological order. */
   balance: number;
 }

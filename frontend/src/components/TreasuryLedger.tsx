@@ -58,7 +58,16 @@ export function TreasuryLedger({ year }: { year: number }) {
       key: 'label',
       label: t('ledger.colLabel'),
       className: 'text-slate-700',
-      render: (movement) => movement.label,
+      render: (movement) => (
+        <>
+          {movement.label}
+          {(movement.months_covered ?? 1) > 1 && (
+            <span className="ms-1.5 text-xs text-slate-400">
+              {t('ledger.monthsCovered', { count: movement.months_covered })}
+            </span>
+          )}
+        </>
+      ),
     },
     {
       key: 'reference',

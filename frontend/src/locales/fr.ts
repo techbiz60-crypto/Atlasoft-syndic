@@ -483,6 +483,7 @@ export const fr = {
     colMethod: 'Mode',
     colAmount: 'Montant',
     colBalance: 'Solde',
+    monthsCovered: '({{count}} mois)',
     openingBalance: 'Solde au 1er janvier',
     totalIn: 'Total encaissé',
     totalOut: 'Total décaissé',

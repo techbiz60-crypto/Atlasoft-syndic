@@ -491,6 +491,7 @@ export const ar: TranslationResource = {
     colMethod: 'الطريقة',
     colAmount: 'المبلغ',
     colBalance: 'الرصيد',
+    monthsCovered: '({{count}} أشهر)',
     openingBalance: 'الرصيد في فاتح يناير',
     totalIn: 'مجموع المقبوضات',
     totalOut: 'مجموع المصروفات',

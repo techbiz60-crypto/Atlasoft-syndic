@@ -127,6 +127,31 @@ class LedgerTest extends TestCase
         $this->assertSame($summary->json('closing_balance'), $ledger->json('closing_balance'));
     }
 
+    public function test_months_paid_in_one_go_appear_as_a_single_movement(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 0]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $this->actingAs($admin)->postJson("/api/lots/{$lot->id}/payments/bulk", [
+            'months' => [1, 2, 3, 4],
+            'year' => 2026,
+            'paid_at' => '2026-01-03',
+            'method' => PaymentMethod::Especes->value,
+        ])->assertCreated();
+
+        $response = $this->actingAs($admin)->getJson('/api/ledger?year=2026');
+
+        // Four monthly rows under the hood, but the bank saw one 800 DH
+        // movement — and the balance never passed through 200/400/600.
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.amount', 800)
+            ->assertJsonPath('data.0.months_covered', 4)
+            ->assertJsonPath('data.0.balance', 800)
+            ->assertJsonPath('closing_balance', 800);
+    }
+
     public function test_an_opening_balance_repayment_is_flagged_as_such(): void
     {
         $residence = Residence::factory()->create(['opening_balance' => 0]);
