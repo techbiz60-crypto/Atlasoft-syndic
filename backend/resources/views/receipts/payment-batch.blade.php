@@ -5,7 +5,7 @@
     <title>Reçu de paiement groupé</title>
     <style>
         @page { margin: 40px 45px; }
-        body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; font-size: 12px; }
+        body { font-family: 'DejaVu Sans', sans-serif; color: #1e293b; font-size: 12px; }
         .header { width: 100%; border-bottom: 3px solid #059685; padding-bottom: 14px; margin-bottom: 24px; }
         .header td { vertical-align: top; }
         .residence-name { font-size: 18px; font-weight: bold; color: #0d4e48; }
@@ -32,9 +32,9 @@
     <table class="header">
         <tr>
             <td style="width: 60%;">
-                <div class="residence-name">{{ $residence->name }}</div>
+                <div class="residence-name">@arabic($residence->name)</div>
                 @if($residence->address)
-                    <div class="residence-address">{{ $residence->address }}</div>
+                    <div class="residence-address">@arabic($residence->address)</div>
                 @endif
             </td>
             <td style="width: 40%;">
@@ -53,11 +53,11 @@
     <table class="details">
         <tr>
             <td class="label">Copropriétaire</td>
-            <td class="value">{{ $payments->first()->owner_name ?? $lot->owner_name }}</td>
+            <td class="value">@arabic($payments->first()->owner_name ?? $lot->owner_name)</td>
         </tr>
         <tr>
             <td class="label">Appartement</td>
-            <td class="value">{{ $lot->number }} — {{ $lot->building->name }}</td>
+            <td class="value">@arabic($lot->number) — @arabic($lot->building->name)</td>
         </tr>
         <tr>
             <td class="label">Date du paiement</td>
@@ -70,7 +70,7 @@
         @if($notes)
             <tr>
                 <td class="label">Note</td>
-                <td class="value">{{ $notes }}</td>
+                <td class="value">@arabic($notes)</td>
             </tr>
         @endif
     </table>
