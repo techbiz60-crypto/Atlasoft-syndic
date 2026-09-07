@@ -8,6 +8,9 @@ import { PageHeader } from '../components/PageHeader';
 import { Field, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
+import { AgRecapTable } from '../components/AgRecapTable';
+
+type Tab = 'account' | 'recap';
 
 const currentYear = new Date().getFullYear();
 const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
@@ -25,18 +28,23 @@ export function AgReportPage() {
   const monthLabels = t('common.monthsShort', { returnObjects: true }) as string[];
 
   const [year, setYear] = useState(currentYear);
+  const [tab, setTab] = useState<Tab>('account');
   const [report, setReport] = useState<AgReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (tab !== 'account') {
+      return;
+    }
+
     setIsLoading(true);
     api
       .get<AgReport>('/api/reports/ag', { params: { year } })
       .then(({ data }) => setReport(data))
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setIsLoading(false));
-  }, [year]);
+  }, [year, tab]);
 
   return (
     <div>
@@ -53,18 +61,67 @@ export function AgReportPage() {
         }
       />
 
-      <div className="no-print mb-5 max-w-[10rem]">
-        <Field label={t('agReport.yearLabel')} htmlFor="ag-year">
-          <Select id="ag-year" value={year} onChange={(event) => setYear(Number(event.target.value))}>
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </Select>
-        </Field>
+      <div className="no-print mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-[10rem]">
+          <Field label={t('agReport.yearLabel')} htmlFor="ag-year">
+            <Select id="ag-year" value={year} onChange={(event) => setYear(Number(event.target.value))}>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+
+        <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+          <TabButton isActive={tab === 'account'} onClick={() => setTab('account')}>
+            {t('agReport.tabAccount')}
+          </TabButton>
+          <TabButton isActive={tab === 'recap'} onClick={() => setTab('recap')}>
+            {t('agReport.tabRecap')}
+          </TabButton>
+        </div>
       </div>
 
+      {tab === 'recap' ? (
+        <AgRecapTable year={year} />
+      ) : (
+        <AgAccount report={report} error={error} isLoading={isLoading} monthLabels={monthLabels} t={t} />
+      )}
+    </div>
+  );
+}
+
+function TabButton({ isActive, onClick, children }: { isActive: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
+        isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function AgAccount({
+  report,
+  error,
+  isLoading,
+  monthLabels,
+  t,
+}: {
+  report: AgReport | null;
+  error: string | null;
+  isLoading: boolean;
+  monthLabels: string[];
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div>
       {error && (
         <div className="no-print mb-4">
           <ErrorAlert>{error}</ErrorAlert>

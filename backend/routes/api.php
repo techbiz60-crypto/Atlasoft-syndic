@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AgRecapController;
 use App\Http\Controllers\Api\AgReportController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BuildingController;
@@ -63,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/ledger', [LedgerController::class, 'index']);
         Route::get('/reports/payments', [ReportController::class, 'payments']);
         Route::get('/reports/ag', [AgReportController::class, 'index']);
+        Route::get('/reports/ag-recap', [AgRecapController::class, 'index']);
         Route::get('/subscription', [SubscriptionController::class, 'show']);
         Route::get('/subscription/invoices', [SubscriptionController::class, 'invoices']);
 

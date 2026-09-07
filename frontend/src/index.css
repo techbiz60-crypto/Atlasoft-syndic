@@ -32,11 +32,35 @@ body {
   }
 
   /* Browsers strip background colors when printing by default (to save
-     ink) unless told otherwise — without this, the report's black floor
-     rows print as plain grey/white text on a blank background. */
+     ink) unless told otherwise — without this, the report's grey floor
+     rows print as plain white. */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Printed/exported as a plain black-and-white document: the on-screen
+     colour coding (green/red amounts, dark floor bands) carries no meaning
+     once it reaches a photocopier or a black-ink printer, and tinted cells
+     only muddy the scan. */
+  .print-bw,
+  .print-bw * {
+    color: #000 !important;
+    background-color: transparent !important;
+  }
+
+  .print-bw table {
+    border-collapse: collapse !important;
+  }
+
+  .print-bw th,
+  .print-bw td {
+    border: 1px solid #000 !important;
+    font-weight: bold !important;
+  }
+
+  .print-bw .print-floor-row td {
+    background-color: #d4d4d4 !important;
   }
 }
 

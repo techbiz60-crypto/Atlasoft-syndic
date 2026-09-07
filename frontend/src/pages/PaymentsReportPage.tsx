@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { Printer } from 'lucide-react';
+import { FileDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
@@ -100,10 +100,13 @@ export function PaymentsReportPage() {
         title={t('paymentsReport.title')}
         action={
           report && (
-            <Button type="button" variant="secondary" onClick={() => window.print()} className="no-print">
-              <Printer className="size-4" />
-              {t('paymentsReport.printButton')}
-            </Button>
+            <div className="no-print flex flex-col items-end gap-1">
+              <Button type="button" variant="secondary" onClick={() => window.print()}>
+                <FileDown className="size-4" />
+                {t('paymentsReport.exportButton')}
+              </Button>
+              <span className="text-xs text-slate-400">{t('paymentsReport.exportHint')}</span>
+            </div>
           )
         }
       />
@@ -139,7 +142,7 @@ export function PaymentsReportPage() {
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : report && report.rows.length > 0 ? (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <div className="print-bw overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
           <div className="hidden border-b border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 print:block">
             {report.building_name} — {report.year}
           </div>
@@ -161,7 +164,7 @@ export function PaymentsReportPage() {
             <tbody>
               {groups.map((group) => (
                 <Fragment key={`${group.floor}-${group.rows[0].lot_id}`}>
-                  <tr className="bg-slate-900">
+                  <tr className="print-floor-row bg-slate-900">
                     <td colSpan={17} className="border border-slate-900 px-3 py-2 text-center text-sm font-bold text-white">
                       {group.label}
                     </td>

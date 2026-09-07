@@ -218,6 +218,26 @@ export interface Ledger {
   data: LedgerMovement[];
 }
 
+export interface AgRecapLine {
+  id?: number;
+  name?: string;
+  lots_count: number;
+  paying_lots_count: number;
+  paying_lots_rate: number;
+  dues_total: number;
+  collected_for_year: number;
+  collection_rate: number;
+  collected_for_arrears: number;
+  collected_total: number;
+}
+
+export interface AgRecap {
+  year: number;
+  residence_name: string;
+  buildings: AgRecapLine[];
+  total: AgRecapLine;
+}
+
 export interface AgReport {
   year: number;
   residence_name: string;
