@@ -74,7 +74,7 @@ class DashboardController extends Controller
             'cash_balance' => $residence->cashBalanceBefore($to->copy()->addDay()),
             'unpaid_total' => $unpaid->sum('total_due'),
             'unpaid_count' => $unpaid->count(),
-            'top_unpaid' => $unpaid->take(5)->values(),
+            'top_unpaid' => $unpaid->take(10)->values(),
             'collected_total' => $collectedTotal,
             'revenues_total' => $revenuesTotal,
             'expenses_total' => $expensesTotal,
