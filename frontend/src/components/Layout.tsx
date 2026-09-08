@@ -188,11 +188,6 @@ export function Layout() {
               <LanguageSwitcher variant="dark" />
             </div>
           )}
-          {!collapsed && (
-            <div className="mb-3 px-2">
-              <LanguageSwitcher variant="dark" />
-            </div>
-          )}
           <button
             onClick={() => logout()}
             title={collapsed ? t('nav.logout') : undefined}
