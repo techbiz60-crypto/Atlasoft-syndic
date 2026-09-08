@@ -17,6 +17,7 @@ import {
   Settings,
   ShieldCheck,
   TrendingUp,
+  UserCircle,
   UserPlus,
   Users,
   Wallet,
@@ -167,10 +168,24 @@ export function Layout() {
         </nav>
 
         <div className="mt-6 border-t border-white/10 pt-4">
+          <NavLink
+            to="/mon-compte"
+            title={collapsed ? t('nav.myAccount') : undefined}
+            className={({ isActive }) =>
+              `mb-3 flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-white/5 ${collapsed ? 'justify-center' : ''} ${isActive ? 'bg-white/5' : ''}`
+            }
+          >
+            <UserCircle className="size-4.5 shrink-0 text-slate-400" />
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-white">{user.name}</p>
+                <p className="text-xs text-slate-400">{roleLabels[user.role] ?? user.role}</p>
+              </div>
+            )}
+          </NavLink>
           {!collapsed && (
             <div className="mb-3 px-2">
-              <p className="truncate text-sm font-medium text-white">{user.name}</p>
-              <p className="text-xs text-slate-400">{roleLabels[user.role] ?? user.role}</p>
+              <LanguageSwitcher variant="dark" />
             </div>
           )}
           {!collapsed && (

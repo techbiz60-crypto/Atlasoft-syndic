@@ -72,6 +72,7 @@ export const ar: TranslationResource = {
     revenues: 'المداخيل',
     agReport: 'الجمع العام',
     subscription: 'الاشتراك',
+    myAccount: 'حسابي',
     residenceSettings: 'إعدادات الإقامة',
     users: 'المستخدمون',
     rolePermissions: 'الأدوار والصلاحيات',
@@ -436,6 +437,15 @@ export const ar: TranslationResource = {
     confirmDelete: 'هل تريدون حذف هذه الفئة؟',
     emptyTitle: 'لا توجد أي فئة بعد',
     emptyDesc: 'أضيفوا أول فئة مداخيل.',
+  },
+  myAccount: {
+    title: 'حسابي',
+    subtitle: '{{name}} — {{email}}',
+    currentPasswordLabel: 'كلمة المرور الحالية',
+    newPasswordLabel: 'كلمة المرور الجديدة',
+    confirmPasswordLabel: 'تأكيد كلمة المرور الجديدة',
+    saveButton: 'تغيير كلمة المرور',
+    savedMessage: 'تم تغيير كلمة المرور بنجاح.',
   },
   residenceSettings: {
     title: 'إعدادات الإقامة',

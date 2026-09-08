@@ -20,6 +20,7 @@ import { ExpensesPage } from './pages/ExpensesPage';
 import { ExpenseCategoriesPage } from './pages/ExpenseCategoriesPage';
 import { RevenuesPage } from './pages/RevenuesPage';
 import { RevenueCategoriesPage } from './pages/RevenueCategoriesPage';
+import { MyAccountPage } from './pages/MyAccountPage';
 import { ResidenceSettingsPage } from './pages/ResidenceSettingsPage';
 import { TreasuryPage } from './pages/TreasuryPage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
@@ -59,6 +60,7 @@ function App() {
               <Route path="/depenses/categories" element={<ExpenseCategoriesPage />} />
               <Route path="/recettes" element={<RevenuesPage />} />
               <Route path="/recettes/categories" element={<RevenueCategoriesPage />} />
+              <Route path="/mon-compte" element={<MyAccountPage />} />
               <Route path="/residence" element={<ResidenceSettingsPage />} />
               <Route path="/utilisateurs" element={<UsersPage />} />
               <Route path="/permissions" element={<RolePermissionsPage />} />

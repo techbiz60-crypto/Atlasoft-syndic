@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('throttle:6,1');
 
     Route::middleware(['verified', 'tenant.user'])->group(function () {
+        Route::put('/password', [AuthController::class, 'updatePassword']);
         Route::get('/residence', [ResidenceController::class, 'show']);
         Route::get('/buildings', [BuildingController::class, 'index']);
         Route::get('/lot-types', [LotTypeController::class, 'index']);

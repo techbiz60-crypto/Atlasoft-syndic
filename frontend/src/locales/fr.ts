@@ -57,6 +57,7 @@ export const fr = {
     revenues: 'Recettes',
     agReport: 'Assemblée générale',
     subscription: 'Abonnement',
+    myAccount: 'Mon compte',
     residenceSettings: 'Paramètres résidence',
     users: 'Utilisateurs',
     rolePermissions: 'Rôles et permissions',
@@ -427,6 +428,15 @@ export const fr = {
     confirmDelete: 'Supprimer cette catégorie ?',
     emptyTitle: "Aucune catégorie pour l'instant",
     emptyDesc: 'Ajoutez votre première catégorie de recette.',
+  },
+  myAccount: {
+    title: 'Mon compte',
+    subtitle: '{{name}} — {{email}}',
+    currentPasswordLabel: 'Mot de passe actuel',
+    newPasswordLabel: 'Nouveau mot de passe',
+    confirmPasswordLabel: 'Confirmer le nouveau mot de passe',
+    saveButton: 'Changer le mot de passe',
+    savedMessage: 'Mot de passe modifié avec succès.',
   },
   residenceSettings: {
     title: 'Paramètres de la résidence',

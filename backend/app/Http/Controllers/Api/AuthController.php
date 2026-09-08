@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
 use App\Models\Building;
 use App\Models\ExpenseCategory;
 use App\Models\Residence;
@@ -95,5 +96,17 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json(['user' => $request->user()->load('residence')]);
+    }
+
+    /**
+     * Self-service password change — any authenticated role, no permission
+     * gate: proving the current password is the only authorization this
+     * needs.
+     */
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        $request->user()->update(['password' => $request->validated('password')]);
+
+        return response()->json(status: 204);
     }
 }
