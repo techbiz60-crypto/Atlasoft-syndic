@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AgRecapController;
 use App\Http\Controllers\Api\AgReportController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BuildingController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
@@ -60,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/revenues/{revenue}/receipt', [RevenueController::class, 'receipt']);
         Route::get('/revenue-categories', [RevenueCategoryController::class, 'index']);
 
+        Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/treasury-report', [TreasuryReportController::class, 'index']);
         Route::get('/ledger', [LedgerController::class, 'index']);
         Route::get('/reports/payments', [ReportController::class, 'payments']);

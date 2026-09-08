@@ -85,9 +85,13 @@ class FundCallController extends Controller
      * billed or not, since fund calls are only created lazily and a month
      * with no row is still owed.
      *
+     * Public so DashboardController can reuse the exact same arrears
+     * calculation instead of re-deriving it — a lot's debt must not be
+     * defined two different ways in two different places.
+     *
      * @return array<string, mixed>|null
      */
-    private function unpaidSummaryFor(Lot $lot, Carbon $currentMonth): ?array
+    public function unpaidSummaryFor(Lot $lot, Carbon $currentMonth): ?array
     {
         $openingBalanceCall = $lot->fundCalls->first(fn (FundCall $call) => $call->is_opening_balance);
         $openingBalanceDue = $openingBalanceCall && $openingBalanceCall->status !== 'paid'

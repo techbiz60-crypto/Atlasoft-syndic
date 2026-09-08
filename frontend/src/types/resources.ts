@@ -218,6 +218,54 @@ export interface Ledger {
   data: LedgerMovement[];
 }
 
+export interface DashboardUnpaidLot {
+  lot_id: number;
+  lot_number: string;
+  building_name: string;
+  owner_name: string;
+  owner_phone: string | null;
+  total_due: number;
+  months_late: number;
+  oldest_unpaid_period: string | null;
+  last_payment_date: string | null;
+  opening_balance_due: number;
+}
+
+export interface DashboardMovement {
+  date: string;
+  direction: 'in' | 'out';
+  kind: 'cotisation' | 'opening_balance' | 'revenue' | 'expense';
+  label: string;
+  reference: string;
+  amount: number;
+}
+
+export interface DashboardMonthPoint {
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+  balance: number;
+}
+
+export interface Dashboard {
+  from: string;
+  to: string;
+  building_id: number | null;
+  cash_balance: number;
+  unpaid_total: number;
+  unpaid_count: number;
+  top_unpaid: DashboardUnpaidLot[];
+  collected_total: number;
+  revenues_total: number;
+  expenses_total: number;
+  dues_total: number;
+  collected_for_range: number;
+  collection_rate: number;
+  monthly_series: DashboardMonthPoint[];
+  recent_movements: DashboardMovement[];
+}
+
 export interface AgRecapLine {
   id?: number;
   name?: string;
