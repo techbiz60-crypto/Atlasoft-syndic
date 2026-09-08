@@ -105,8 +105,50 @@ class AgReportTest extends TestCase
         // cotisations, but still part of what came in.
         $response->assertOk()
             ->assertJsonPath('cotisations', array_fill(0, 12, 0))
-            ->assertJsonPath('opening_balance_recovered.4', 900)
+            ->assertJsonPath('prior_debt_recovered.4', 900)
             ->assertJsonPath('total_income', 900);
+    }
+
+    /**
+     * The exact scenario a syndic handover raises: December 2026 goes
+     * unpaid, the new conseil takes office for 2027, and the resident only
+     * settles that old month in June 2027. The 2027 AG has to see it as
+     * debt recovered from a prior exercise — not as a 2027 cotisation, and
+     * not invisible either, which is what happened before this line only
+     * recognised the pre-platform opening balance.
+     */
+    public function test_a_late_ordinary_cotisation_from_a_prior_year_is_recovered_debt_not_a_new_cotisation(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-12-01',
+        ]);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2027-06-15',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        // The new conseil's own exercise: this must show as recovered prior
+        // debt, not as one of 2027's own cotisations.
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2027')
+            ->assertOk()
+            ->assertJsonPath('cotisations', array_fill(0, 12, 0))
+            ->assertJsonPath('prior_debt_recovered.5', 200)
+            ->assertJsonPath('total_income', 200);
+
+        // Untouched by the fix: the outgoing conseil's own 2026 report still
+        // shows this as a December 2026 cotisation, exactly as before —
+        // counted by the month it covers, not by when it was actually paid.
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')
+            ->assertOk()
+            ->assertJsonPath('cotisations.11', 200)
+            ->assertJsonPath('prior_debt_recovered', array_fill(0, 12, 0));
     }
 
     public function test_report_aggregates_revenues_expenses_and_the_result(): void

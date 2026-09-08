@@ -291,7 +291,8 @@ export interface AgReport {
   residence_name: string;
   /** Grouped by the month each payment covers, not the month it was received. */
   cotisations: number[];
-  opening_balance_recovered: number[];
+  /** Any debt from a prior exercise settled this year — the pre-platform opening balance, or an ordinary cotisation paid late. */
+  prior_debt_recovered: number[];
   revenue_categories: TreasuryCategoryLine[];
   expense_categories: TreasuryCategoryLine[];
   income_by_month: number[];

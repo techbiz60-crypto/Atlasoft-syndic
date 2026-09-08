@@ -159,8 +159,8 @@ function AgAccount({
 
               <Row label={t('agReport.cotisationsRow')} amounts={report.cotisations} />
 
-              {sum(report.opening_balance_recovered) > 0 && (
-                <Row label={t('agReport.openingBalanceRow')} amounts={report.opening_balance_recovered} />
+              {sum(report.prior_debt_recovered) > 0 && (
+                <Row label={t('agReport.priorDebtRow')} amounts={report.prior_debt_recovered} />
               )}
 
               {report.revenue_categories.map((category) => (

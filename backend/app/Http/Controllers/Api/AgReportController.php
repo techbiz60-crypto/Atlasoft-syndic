@@ -82,12 +82,19 @@ class AgReportController extends Controller
                 $cotisations[$payment->fundCall->period->month - 1] += $payment->amount;
             });
 
-        // Repayments of pre-platform debt: real money, but it settles older
-        // exercises, so it is reported on its own line rather than mixed
-        // into the year's cotisations.
-        $openingBalanceRecovered = $this->amountsByMonth(
+        // Money that settles a debt from before this exercise — the
+        // pre-platform opening balance, but just as much an ordinary
+        // cotisation from a prior calendar year paid late (e.g. December
+        // 2026 settled in 2027, once the new conseil is already in office).
+        // Real income for this exercise, but it must never be mixed into
+        // "cotisations de l'exercice" above, which only covers this year's
+        // own months — so it gets its own line instead.
+        $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
+
+        $priorDebtRecovered = $this->amountsByMonth(
             Payment::whereYear('paid_at', $year)
-                ->whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true))
+                ->whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true)
+                    ->orWhere(fn ($q) => $q->where('is_opening_balance', false)->whereDate('period', '<', $startOfYear)))
                 ->get(['amount', 'paid_at']),
             'paid_at',
         );
@@ -118,7 +125,7 @@ class AgReportController extends Controller
 
         $incomeByMonth = $cotisations;
 
-        foreach ($openingBalanceRecovered as $index => $amount) {
+        foreach ($priorDebtRecovered as $index => $amount) {
             $incomeByMonth[$index] += $amount;
         }
 
@@ -157,7 +164,7 @@ class AgReportController extends Controller
             'year' => $year,
             'residence_name' => $residence->name,
             'cotisations' => $cotisations,
-            'opening_balance_recovered' => $openingBalanceRecovered,
+            'prior_debt_recovered' => $priorDebtRecovered,
             'revenue_categories' => $revenueCategories,
             'expense_categories' => $expenseCategories,
             'income_by_month' => $incomeByMonth,
