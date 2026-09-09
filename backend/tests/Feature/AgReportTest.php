@@ -142,13 +142,120 @@ class AgReportTest extends TestCase
             ->assertJsonPath('prior_debt_recovered.5', 200)
             ->assertJsonPath('total_income', 200);
 
-        // Untouched by the fix: the outgoing conseil's own 2026 report still
-        // shows this as a December 2026 cotisation, exactly as before —
-        // counted by the month it covers, not by when it was actually paid.
+        // The outgoing conseil's own 2026 report no longer shows this as a
+        // December 2026 cotisation: with no AG date on file, 2026's books
+        // are treated as closed on January 1st 2027, and this payment
+        // arrived after that — it's fully recognised on 2027's report
+        // instead, so it isn't double-counted across the two exercises.
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')
+            ->assertOk()
+            ->assertJsonPath('cotisations.11', 0)
+            ->assertJsonPath('prior_debt_recovered', array_fill(0, 12, 0));
+    }
+
+    /**
+     * The precise mechanic the user asked to verify: an exercise's books
+     * don't actually close on December 31st, they close the day its AG is
+     * held. A late 2026 cotisation settled before that date still belongs
+     * to 2026, even once the calendar has already turned to 2027; settled
+     * after that date, it's 2027's debt recovered instead.
+     */
+    public function test_a_prior_year_debt_settled_before_its_own_ag_still_belongs_to_that_exercise(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $residence->generalAssemblies()->create(['exercise_year' => 2026, 'held_on' => '2027-01-31']);
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-12-01',
+        ]);
+
+        // Paid January 1st 2027 — the calendar year has turned, but the
+        // 2026 AG (31/01/2027) hasn't happened yet: still 2026's cotisation.
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2027-01-01',
+            'method' => PaymentMethod::Virement,
+        ]);
+
         $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')
             ->assertOk()
             ->assertJsonPath('cotisations.11', 200)
             ->assertJsonPath('prior_debt_recovered', array_fill(0, 12, 0));
+
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2027')
+            ->assertOk()
+            ->assertJsonPath('cotisations', array_fill(0, 12, 0))
+            ->assertJsonPath('prior_debt_recovered', array_fill(0, 12, 0))
+            ->assertJsonPath('total_income', 0);
+    }
+
+    /**
+     * Same debt, same AG date (31/01/2027) — but paid the day after the AG,
+     * once 2026's books are closed: it's now the new conseil's recovered
+     * debt, and 2026 must not show it at all.
+     */
+    public function test_a_prior_year_debt_settled_after_its_own_ag_becomes_recovered_debt_for_the_new_exercise(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        $residence->generalAssemblies()->create(['exercise_year' => 2026, 'held_on' => '2027-01-31']);
+
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-12-01',
+        ]);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2027-06-06',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2026')
+            ->assertOk()
+            ->assertJsonPath('cotisations.11', 0)
+            ->assertJsonPath('prior_debt_recovered', array_fill(0, 12, 0))
+            ->assertJsonPath('total_income', 0);
+
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2027')
+            ->assertOk()
+            ->assertJsonPath('cotisations', array_fill(0, 12, 0))
+            ->assertJsonPath('prior_debt_recovered.5', 200)
+            ->assertJsonPath('total_income', 200);
+    }
+
+    /**
+     * The AG date also moves the balance boundary: what closes into 2026's
+     * balance is everything paid before its own AG (31/01/2027), not
+     * everything paid before January 1st 2027 — so the December payment
+     * made on the AG date's eve is part of 2026's closing balance, and the
+     * one made the day after is not.
+     */
+    public function test_the_ag_date_moves_the_balance_boundary_not_just_the_calendar_year(): void
+    {
+        $residence = Residence::factory()->create(['opening_balance' => 0]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+        $residence->generalAssemblies()->create(['exercise_year' => 2026, 'held_on' => '2027-01-31']);
+
+        $decemberDue = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-12-01']);
+        $decemberDue->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2027-01-01',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $this->actingAs($admin)->getJson('/api/reports/ag?year=2027')
+            ->assertOk()
+            ->assertJsonPath('opening_balance', 200);
     }
 
     public function test_report_aggregates_revenues_expenses_and_the_result(): void

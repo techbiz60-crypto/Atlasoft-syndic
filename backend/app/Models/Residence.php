@@ -67,6 +67,28 @@ class Residence extends Model
         return $this->hasMany(User::class);
     }
 
+    public function generalAssemblies(): HasMany
+    {
+        return $this->hasMany(GeneralAssembly::class);
+    }
+
+    /**
+     * The moment exercise $year's books close: the date its AG was held, or
+     * January 1st of the following year by default when no AG has been
+     * recorded yet — the boundary the AG report always used before this
+     * concept existed, kept as the fallback so residences with no AG dates
+     * on file behave exactly as before.
+     *
+     * Read only by the AG report — Trésorerie and the Grand livre are pure
+     * cash-basis and must never be affected by when an AG happens.
+     */
+    public function agCutoffFor(int $year): Carbon
+    {
+        $heldOn = $this->generalAssemblies->firstWhere('exercise_year', $year)?->held_on;
+
+        return $heldOn ? $heldOn->copy()->startOfDay() : Carbon::create($year + 1, 1, 1)->startOfDay();
+    }
+
     public function subscription(): HasOne
     {
         return $this->hasOne(Subscription::class);

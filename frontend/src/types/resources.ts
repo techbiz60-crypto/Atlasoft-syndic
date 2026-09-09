@@ -38,6 +38,11 @@ export interface LotOwnerHistoryEntry {
 
 export type LotReferenceType = 'elevator_chip' | 'garage_number';
 
+export interface GeneralAssembly {
+  exercise_year: number;
+  held_on: string;
+}
+
 export interface LotReferenceEntry {
   id: number;
   type: LotReferenceType;

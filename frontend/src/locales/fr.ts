@@ -451,6 +451,18 @@ export const fr = {
     saveButton: 'Enregistrer',
     savedMessage: 'Modifications enregistrées.',
   },
+  generalAssemblies: {
+    title: 'Dates des assemblées générales',
+    subtitle:
+      "Une fois la date de l'AG d'un exercice enregistrée, tout paiement d'une dette de cet exercice reçu après cette date est compté comme une dette antérieure recouvrée l'année suivante, plutôt que comme une cotisation de l'exercice clos. Laissez vide un exercice dont l'AG n'a pas encore eu lieu : ses comptes restent ouverts au 1er janvier suivant par défaut.",
+    yearLabel: 'Exercice',
+    dateLabel: "Date de l'AG",
+    addButton: 'Ajouter un exercice',
+    saveButton: 'Enregistrer',
+    clearButton: 'Effacer',
+    savedMessage: 'Date enregistrée.',
+    clearedMessage: 'Date supprimée — cet exercice redevient ouvert au 1er janvier suivant.',
+  },
   users: {
     title: 'Utilisateurs',
     subtitle: 'Donnez un accès à un trésorier ou à un membre du conseil syndical.',

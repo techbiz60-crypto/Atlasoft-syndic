@@ -33,27 +33,32 @@ class AgReportController extends Controller
      * @return array<int, float> 12-slot array (index 0 = January)
      */
     /**
-     * What every exercise before this one left behind, read on the same
-     * basis as the report itself: cotisations against the months they
-     * cover, the rest against their own date. So a 2026 due settled during
-     * 2025 belongs to 2026 here, and does not inflate the balance carried
-     * into it.
+     * What every exercise before this one left behind.
+     *
+     * A due still belongs to the exercise matching its own period — a 2026
+     * due is always 2026's, whether it's settled early or late — so that
+     * part of the filter stays purely calendar-based. But the cash itself
+     * only counts as "settled" here once it was actually paid before this
+     * exercise's own cash window opened (the AG that closed exercise
+     * $year - 1); a late payment that arrives after that point belongs to
+     * whichever exercise is open when it's actually paid, so it must not be
+     * double-counted here as well as on that later exercise's own report.
      */
     private function balanceBeforeYear(Residence $residence, int $year): float
     {
-        $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
+        $yearStart = Carbon::create($year, 1, 1)->startOfDay();
+        $cutoff = $residence->agCutoffFor($year - 1);
 
-        $cotisations = Payment::whereHas(
-            'fundCall',
-            fn ($query) => $query->where('is_opening_balance', false)->whereDate('period', '<', $startOfYear)
-        )->sum('amount');
-
-        $openingBalanceRecovered = Payment::whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true))
-            ->whereDate('paid_at', '<', $startOfYear)
+        $cotisations = Payment::whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', false)->whereDate('period', '<', $yearStart))
+            ->whereDate('paid_at', '<', $cutoff)
             ->sum('amount');
 
-        $revenues = Revenue::whereDate('received_at', '<', $startOfYear)->sum('amount');
-        $expenses = Expense::whereDate('paid_at', '<', $startOfYear)->sum('amount');
+        $openingBalanceRecovered = Payment::whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true))
+            ->whereDate('paid_at', '<', $cutoff)
+            ->sum('amount');
+
+        $revenues = Revenue::whereDate('received_at', '<', $cutoff)->sum('amount');
+        $expenses = Expense::whereDate('paid_at', '<', $cutoff)->sum('amount');
 
         return $residence->opening_balance + $cotisations + $openingBalanceRecovered + $revenues - $expenses;
     }
@@ -72,37 +77,54 @@ class AgReportController extends Controller
     public function index(Request $request): JsonResponse
     {
         $year = $request->integer('year') ?: Carbon::now()->year;
+        $residence = $request->user()->residence;
+
+        $yearStart = Carbon::create($year, 1, 1)->startOfDay();
+        // The cash window this exercise's own report can still recognise
+        // money in: from the moment the previous exercise's AG closed its
+        // books, until this exercise's own AG closes these. Falls back to
+        // plain calendar years when no AG date has been recorded, so a
+        // residence with no AG dates on file behaves exactly as before.
+        $cutoffStart = $residence->agCutoffFor($year - 1);
+        $cutoffEnd = $residence->agCutoffFor($year);
 
         $cotisations = array_fill(0, 12, 0);
 
+        // A due belongs to the exercise matching its own period, whether
+        // settled early or late — but only up to the moment this exercise's
+        // AG closes the books. Paid any later, it no longer counts as this
+        // exercise's own cotisation; it's recovered debt for whichever
+        // exercise is open when it's actually paid (see below).
         Payment::with('fundCall')
             ->whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', false)->whereYear('period', $year))
+            ->whereDate('paid_at', '<', $cutoffEnd)
             ->get()
             ->each(function (Payment $payment) use (&$cotisations) {
                 $cotisations[$payment->fundCall->period->month - 1] += $payment->amount;
             });
 
-        // Money that settles a debt from before this exercise — the
-        // pre-platform opening balance, but just as much an ordinary
-        // cotisation from a prior calendar year paid late (e.g. December
-        // 2026 settled in 2027, once the new conseil is already in office).
+        // Money that settles a debt from an exercise whose books are
+        // already closed — the pre-platform opening balance, but just as
+        // much an ordinary cotisation from a prior calendar year, paid
+        // after its own exercise's AG already happened (e.g. December 2026
+        // settled in 2027, once the new conseil is already in office).
         // Real income for this exercise, but it must never be mixed into
         // "cotisations de l'exercice" above, which only covers this year's
         // own months — so it gets its own line instead.
-        $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
-
         $priorDebtRecovered = $this->amountsByMonth(
-            Payment::whereYear('paid_at', $year)
+            Payment::whereDate('paid_at', '>=', $cutoffStart)->whereDate('paid_at', '<', $cutoffEnd)
                 ->whereHas('fundCall', fn ($query) => $query->where('is_opening_balance', true)
-                    ->orWhere(fn ($q) => $q->where('is_opening_balance', false)->whereDate('period', '<', $startOfYear)))
+                    ->orWhere(fn ($q) => $q->where('is_opening_balance', false)->whereDate('period', '<', $yearStart)))
                 ->get(['amount', 'paid_at']),
             'paid_at',
         );
 
         $revenueCategories = RevenueCategory::orderBy('name')->get()
-            ->map(function (RevenueCategory $category) use ($year) {
+            ->map(function (RevenueCategory $category) use ($cutoffStart, $cutoffEnd) {
                 $amounts = $this->amountsByMonth(
-                    Revenue::where('revenue_category_id', $category->id)->whereYear('received_at', $year)->get(['amount', 'received_at']),
+                    Revenue::where('revenue_category_id', $category->id)
+                        ->whereDate('received_at', '>=', $cutoffStart)->whereDate('received_at', '<', $cutoffEnd)
+                        ->get(['amount', 'received_at']),
                     'received_at',
                 );
 
@@ -112,9 +134,11 @@ class AgReportController extends Controller
             ->values();
 
         $expenseCategories = ExpenseCategory::orderBy('sort_order')->orderBy('name')->get()
-            ->map(function (ExpenseCategory $category) use ($year) {
+            ->map(function (ExpenseCategory $category) use ($cutoffStart, $cutoffEnd) {
                 $amounts = $this->amountsByMonth(
-                    Expense::where('expense_category_id', $category->id)->whereYear('paid_at', $year)->get(['amount', 'paid_at']),
+                    Expense::where('expense_category_id', $category->id)
+                        ->whereDate('paid_at', '>=', $cutoffStart)->whereDate('paid_at', '<', $cutoffEnd)
+                        ->get(['amount', 'paid_at']),
                     'paid_at',
                 );
 
@@ -149,7 +173,6 @@ class AgReportController extends Controller
             $netByMonth[] = $incomeByMonth[$i] - $expensesByMonth[$i];
         }
 
-        $residence = $request->user()->residence;
         $totalIncome = array_sum($incomeByMonth);
         $totalExpenses = array_sum($expensesByMonth);
         $result = $totalIncome - $totalExpenses;

@@ -26,7 +26,13 @@ class AgRecapController extends Controller
     public function index(Request $request): JsonResponse
     {
         $year = $request->integer('year') ?: Carbon::now()->year;
+        $residence = $request->user()->residence;
         $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
+        // Same exercise boundary as the AG report — the AG date that closed
+        // the previous exercise, or January 1st by default — so a building's
+        // recap here can never disagree with the totals on that screen.
+        $cutoffStart = $residence->agCutoffFor($year - 1);
+        $cutoffEnd = $residence->agCutoffFor($year);
 
         $lots = Lot::with('lotType.rates')->get();
 
@@ -36,6 +42,7 @@ class AgRecapController extends Controller
             'fundCall',
             fn ($query) => $query->where('is_opening_balance', false)->whereYear('period', $year)
         )
+            ->whereDate('paid_at', '<', $cutoffEnd)
             ->with('fundCall:id,lot_id')
             ->get()
             ->groupBy(fn (Payment $payment) => $payment->fundCall->lot_id)
@@ -43,7 +50,7 @@ class AgRecapController extends Controller
 
         // Cash that came in during the year but settles something older:
         // earlier exercises' months, plus opening-balance (pre-platform) debt.
-        $paidForArrearsByLot = Payment::whereYear('paid_at', $year)
+        $paidForArrearsByLot = Payment::whereDate('paid_at', '>=', $cutoffStart)->whereDate('paid_at', '<', $cutoffEnd)
             ->whereHas(
                 'fundCall',
                 fn ($query) => $query->where('is_opening_balance', true)

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FundCallController;
+use App\Http\Controllers\Api\GeneralAssemblyController;
 use App\Http\Controllers\Api\LedgerController;
 use App\Http\Controllers\Api\LotAccessController;
 use App\Http\Controllers\Api\LotController;
@@ -74,6 +75,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('subscription.active')->group(function () {
             Route::middleware(['admin'])->group(function () {
                 Route::put('/residence', [ResidenceController::class, 'update']);
+                Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
+                Route::put('/general-assemblies/{year}', [GeneralAssemblyController::class, 'update']);
+                Route::delete('/general-assemblies/{year}', [GeneralAssemblyController::class, 'destroy']);
                 Route::get('/role-permissions', [RolePermissionController::class, 'index']);
                 Route::put('/role-permissions', [RolePermissionController::class, 'update']);
 
