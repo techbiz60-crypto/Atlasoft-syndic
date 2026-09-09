@@ -3,3 +3,6 @@
 Thumbs.db
 /.env
 *.sql
+docker/certbot/www/*
+!docker/certbot/www/.gitkeep
+docker/certbot/conf/

@@ -35,12 +35,28 @@ services:
     restart: unless-stopped
     ports:
       - "8082:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./backend:/var/www/backend
       - ./frontend/dist:/var/www/frontend
       - ./docker/nginx/production.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/certbot/www:/var/www/certbot
+      - ./docker/certbot/conf:/etc/letsencrypt:ro
     depends_on:
       - app
+
+  # One-off / periodic use only (see docs/https-setup.md) — obtains and
+  # renews the syndic.atlasoft.app certificate via the HTTP-01 challenge,
+  # served through the webserver container's /.well-known/acme-challenge/
+  # location, which shares the certbot/www volume with this container.
+  certbot:
+    image: certbot/certbot
+    container_name: atlasoft_syndic_certbot
+    volumes:
+      - ./docker/certbot/www:/var/www/certbot
+      - ./docker/certbot/conf:/etc/letsencrypt
+    entrypoint: "true"
 
   db:
     image: mysql:8.0
