@@ -12,6 +12,19 @@ services:
     depends_on:
       - db
 
+  scheduler:
+    build:
+      context: ./docker/php
+    container_name: atlasoft_syndic_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    command: php artisan schedule:work
+    depends_on:
+      - app
+      - db
+
   webserver:
     image: nginx:alpine
     container_name: atlasoft_syndic_nginx
