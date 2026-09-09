@@ -12,6 +12,7 @@ interface RegisterPayload {
   whatsapp_number: string;
   password: string;
   password_confirmation: string;
+  locale?: string;
 }
 
 interface LoginPayload {

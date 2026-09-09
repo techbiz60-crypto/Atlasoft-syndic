@@ -12,7 +12,7 @@ import { ErrorAlert } from '../components/ui/Alert';
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,6 +41,7 @@ export function RegisterPage() {
       await register({
         ...form,
         lots_count: Number(form.lots_count),
+        locale: i18n.language,
       });
       navigate('/dashboard');
     } catch (err) {

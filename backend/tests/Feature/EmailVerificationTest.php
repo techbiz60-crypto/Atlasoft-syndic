@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Residence;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -32,7 +32,7 @@ class EmailVerificationTest extends TestCase
         $this->assertNull($response->json('user.email_verified_at'));
 
         $user = User::where('email', 'admin@example.com')->first();
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function test_app_routes_are_blocked_until_the_email_is_verified(): void
@@ -97,6 +97,32 @@ class EmailVerificationTest extends TestCase
         $user = User::factory()->for($residence)->unverified()->create();
 
         $this->get("/email/verify/{$user->id}/".sha1($user->email))->assertForbidden();
+    }
+
+    public function test_the_verification_email_is_addressed_and_localized_for_the_registering_users_language(): void
+    {
+        Notification::fake();
+
+        $this->postJson('/api/register', [
+            'residence_name' => 'Résidence Test',
+            'lots_count' => 6,
+            'name' => 'Karim',
+            'email' => 'karim@example.com',
+            'whatsapp_number' => '0600000000',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'locale' => 'ar',
+        ])->assertCreated();
+
+        $user = User::where('email', 'karim@example.com')->first();
+        $this->assertSame('ar', $user->locale);
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class, function (VerifyEmailNotification $notification, array $channels, User $notifiable) {
+            $mail = $notification->toMail($notifiable);
+
+            return $mail->to[0]['address'] === 'karim@example.com'
+                && str_contains($mail->envelope()->subject, 'Atlasoft Syndic');
+        });
     }
 
     public function test_resending_when_already_verified_does_not_send_a_new_notification(): void

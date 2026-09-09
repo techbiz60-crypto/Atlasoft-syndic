@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailNotification;
 use App\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail;
@@ -14,12 +15,22 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'role', 'residence_id', 'lot_id', 'whatsapp_number'])]
+#[Fillable(['name', 'email', 'password', 'role', 'residence_id', 'lot_id', 'whatsapp_number', 'locale'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmailContract
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, MustVerifyEmail, Notifiable;
+
+    /**
+     * Overrides the framework default so the email is branded and in the
+     * language the person actually registered in, instead of Laravel's
+     * generic English one.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
 
     public function isAdmin(): bool
     {

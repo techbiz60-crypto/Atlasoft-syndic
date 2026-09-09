@@ -64,6 +64,7 @@ class AuthController extends Controller
                 'email' => $request->string('email'),
                 'whatsapp_number' => $request->string('whatsapp_number'),
                 'password' => $request->string('password'),
+                'locale' => $request->string('locale', 'fr'),
             ]);
         });
 

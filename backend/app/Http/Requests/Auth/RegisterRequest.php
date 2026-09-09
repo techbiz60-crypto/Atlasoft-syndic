@@ -29,6 +29,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'whatsapp_number' => ['required', 'string', 'max:30'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'locale' => ['sometimes', 'string', 'in:fr,ar'],
         ];
     }
 }
