@@ -1,14 +1,18 @@
-import { Building2 } from 'lucide-react';
+import logo from '../assets/atlasoft-syndic-logo.png';
 
 export function Logo({ className = '' }: { className?: string }) {
+  return <img src={logo} alt="Atlasoft Syndic" className={`h-16 w-auto ${className}`} />;
+}
+
+/**
+ * The building pictogram alone, cropped out of the full logo (which also
+ * carries the "Atlasoft Syndic" wordmark below it) — for tight spots like
+ * the sidebar badge where there's only room for a square icon.
+ */
+export function LogoMark({ className = '' }: { className?: string }) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <span className="flex size-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm shadow-brand-900/20">
-        <Building2 className="size-5" strokeWidth={2.25} />
-      </span>
-      <span className="text-lg font-bold tracking-tight text-slate-900">
-        Atlasoft <span className="text-brand-600">Syndic</span>
-      </span>
-    </div>
+    <span className={`block shrink-0 overflow-hidden rounded-xl bg-white ${className}`}>
+      <img src={logo} alt="" className="h-[135%] w-full object-cover object-top" />
+    </span>
   );
 }

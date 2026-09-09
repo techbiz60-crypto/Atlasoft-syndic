@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LogoMark } from './Logo';
 import {
   AlertTriangle,
   Building2,
@@ -89,9 +90,7 @@ export function Layout() {
       >
         <div className={`flex items-center gap-2 px-2 ${collapsed ? 'mb-2 justify-center' : 'mb-6 justify-between'}`}>
           <div className={`flex min-w-0 items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <Building2 className="size-5" strokeWidth={2.25} />
-            </span>
+            <LogoMark className="size-9" />
             {!collapsed && (
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{user.residence.name}</p>
