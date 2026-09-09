@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PlatformProtectedRoute } from './components/PlatformProtectedRoute';
 import { Layout } from './components/Layout';
 import { PlatformLayout } from './components/PlatformLayout';
 import { PlatformClientsPage } from './pages/PlatformClientsPage';
+import { LandingPage } from './pages/LandingPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -29,6 +30,25 @@ import { RolePermissionsPage } from './pages/RolePermissionsPage';
 import { PaymentsReportPage } from './pages/PaymentsReportPage';
 import { AgReportPage } from './pages/AgReportPage';
 
+/**
+ * The public landing page for guests — but a signed-in user landing on "/"
+ * (e.g. a bookmark) should go straight to their dashboard, not see the
+ * marketing pitch again.
+ */
+function HomeRoute() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <LandingPage />;
+}
+
 function App() {
   const { i18n } = useTranslation();
 
@@ -41,7 +61,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<HomeRoute />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>

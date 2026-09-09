@@ -71,6 +71,35 @@ export const fr = {
       coproprietaire: 'Copropriétaire',
     },
   },
+  landing: {
+    nav: {
+      login: 'Se connecter',
+      signup: 'Essayer gratuitement',
+    },
+    hero: {
+      title: 'La gestion de votre copropriété, simplifiée',
+      subtitle:
+        'Cotisations, trésorerie, dépenses et assemblées générales : tout ce dont votre syndic a besoin, dans une seule plateforme claire.',
+      ctaPrimary: 'Créer ma résidence',
+      ctaSecondary: 'Se connecter',
+      trial: "15 jours d'essai gratuit, sans engagement.",
+    },
+    featuresTitle: 'Tout ce qu’il faut pour gérer votre résidence',
+    features: [
+      { title: 'Cotisations & paiements', description: 'Appels de fonds automatiques et suivi des paiements par appartement.' },
+      { title: 'Trésorerie & grand livre', description: 'Le solde en caisse en temps réel, chaque mouvement tracé.' },
+      { title: 'Impayés', description: 'Qui doit quoi, calculé automatiquement, mois par mois.' },
+      { title: 'Rapports AG', description: 'Les chiffres prêts pour votre assemblée générale, en un clic.' },
+      { title: 'Multi-résidences', description: 'Copropriétaires, trésorier et conseil syndical, chacun son accès.' },
+    ],
+    pricingTitle: 'Des tarifs adaptés à la taille de votre résidence',
+    pricingSubtitle: 'Le prix dépend uniquement du nombre d’appartements — pas de frais cachés.',
+    perMonth: 'mois',
+    custom: 'Sur devis',
+    upToLots: "Jusqu'à {{count}} appartements",
+    unlimitedLots: 'Au-delà de 100 appartements',
+    planIncludes: ['Cotisations & paiements', 'Trésorerie & grand livre', 'Rapports AG', 'Support WhatsApp'],
+  },
   auth: {
     login: {
       title: 'Connexion',
