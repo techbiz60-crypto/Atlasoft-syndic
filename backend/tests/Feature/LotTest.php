@@ -37,6 +37,53 @@ class LotTest extends TestCase
         $this->assertDatabaseHas('lots', ['number' => 'A1', 'building_id' => $building->id]);
     }
 
+    /**
+     * Lot::booted() always seeds the first ownership row dated today —
+     * needed when the apartment's real owner has actually been there since
+     * an earlier date (e.g. a residence onboarding that predates the
+     * platform), so the admin must be able to correct it at creation time.
+     */
+    public function test_owner_since_overrides_the_auto_seeded_ownership_start_date(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/lots', [
+            'building_id' => $building->id,
+            'lot_type_id' => $lotType->id,
+            'number' => 'A2',
+            'owner_name' => 'Souad Hamido',
+            'owner_phone' => '0666666666',
+            'owner_since' => '2020-03-15',
+        ]);
+
+        $response->assertCreated();
+
+        $lot = Lot::where('number', 'A2')->first();
+        $this->assertCount(1, $lot->owners);
+        $this->assertSame('2020-03-15', $lot->owners->first()->started_at->toDateString());
+    }
+
+    public function test_omitting_owner_since_still_defaults_to_today(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lotType = LotType::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->postJson('/api/lots', [
+            'building_id' => $building->id,
+            'lot_type_id' => $lotType->id,
+            'number' => 'A3',
+            'owner_name' => 'Karim Bennani',
+        ])->assertCreated();
+
+        $lot = Lot::where('number', 'A3')->first();
+        $this->assertTrue($lot->owners->first()->started_at->isToday());
+    }
+
     public function test_conseil_member_cannot_create_a_lot(): void
     {
         $residence = Residence::factory()->create();

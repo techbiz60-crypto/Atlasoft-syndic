@@ -57,6 +57,7 @@ export function LotsPage() {
     owner_name: '',
     owner_phone: '',
     owner_email: '',
+    owner_since: new Date().toISOString().slice(0, 10),
   };
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -141,6 +142,7 @@ export function LotsPage() {
       owner_name: lot.owner_name,
       owner_phone: lot.owner_phone ?? '',
       owner_email: lot.owner_email ?? '',
+      owner_since: emptyForm.owner_since,
     });
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     firstFieldRef.current?.focus();
@@ -157,12 +159,15 @@ export function LotsPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = { ...form, building_id: Number(form.building_id), lot_type_id: Number(form.lot_type_id) };
+      const { owner_since, ...rest } = form;
+      const payload = { ...rest, building_id: Number(form.building_id), lot_type_id: Number(form.lot_type_id) };
 
       if (editingId) {
         await api.put(`/api/lots/${editingId}`, payload);
       } else {
-        await api.post('/api/lots', payload);
+        // Only meaningful when creating: it corrects the auto-seeded first
+        // ownership row's date, which otherwise always defaults to today.
+        await api.post('/api/lots', { ...payload, owner_since });
       }
 
       resetForm();
@@ -742,6 +747,12 @@ export function LotsPage() {
             <Field label={t('lots.ownerEmailLabel')} htmlFor="owner-email">
               <Input id="owner-email" type="email" value={form.owner_email} onChange={updateField('owner_email')} />
             </Field>
+
+            {!editingId && (
+              <Field label={t('lots.ownerSinceLabel')} htmlFor="owner-since">
+                <Input id="owner-since" type="date" value={form.owner_since} onChange={updateField('owner_since')} required />
+              </Field>
+            )}
 
             <div className="flex gap-2">
               <Button type="submit" isLoading={isSubmitting} className="flex-1">

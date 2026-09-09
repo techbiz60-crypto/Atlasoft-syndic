@@ -37,6 +37,7 @@ class StoreLotRequest extends FormRequest
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_phone' => ['nullable', 'string', 'max:30'],
             'owner_email' => ['nullable', 'email', 'max:255'],
+            'owner_since' => ['nullable', 'date'],
         ];
     }
 }

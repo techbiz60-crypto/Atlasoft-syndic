@@ -228,6 +228,7 @@ export const ar: TranslationResource = {
     ownerNameLabel: 'اسم المالك المشترك',
     ownerPhoneLabel: 'الهاتف',
     ownerEmailLabel: 'البريد الإلكتروني',
+    ownerSinceLabel: 'مالك منذ',
     allBuildings: 'جميع العمارات',
     colLot: 'الشقة',
     colFloor: 'الطابق',

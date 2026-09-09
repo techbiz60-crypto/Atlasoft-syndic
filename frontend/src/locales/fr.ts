@@ -216,6 +216,7 @@ export const fr = {
     ownerNameLabel: 'Nom du copropriétaire',
     ownerPhoneLabel: 'Téléphone',
     ownerEmailLabel: 'Email',
+    ownerSinceLabel: 'Propriétaire depuis le',
     allBuildings: 'Tous les immeubles',
     colLot: 'Lot',
     colFloor: 'Étage',

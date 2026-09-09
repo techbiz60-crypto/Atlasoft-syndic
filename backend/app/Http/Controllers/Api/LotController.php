@@ -27,7 +27,15 @@ class LotController extends Controller
             abort(422, "Votre pack actuel ({$subscription->plan_label}, jusqu'à {$maxLots} appartements) est atteint. Passez à un pack supérieur pour ajouter plus d'appartements.");
         }
 
-        $lot = Lot::create($request->validated());
+        $lot = Lot::create($request->safe()->except('owner_since'));
+
+        // Lot::booted() always seeds the first ownership row dated today —
+        // correct here when the apartment's owner actually started earlier
+        // (e.g. entering a residence that predates the platform), rather
+        // than forcing an edit right after every creation.
+        if ($request->filled('owner_since')) {
+            $lot->owners()->latest('started_at')->first()->update(['started_at' => $request->date('owner_since')]);
+        }
 
         return response()->json(['data' => $lot->load(['lotType', 'building', 'openingBalance', 'residentUser'])], 201);
     }
