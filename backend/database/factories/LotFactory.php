@@ -21,7 +21,11 @@ class LotFactory extends Factory
             'residence_id' => Residence::factory(),
             'building_id' => Building::factory(),
             'lot_type_id' => LotType::factory(),
-            'number' => strtoupper(fake()->bothify('Lot ##')),
+            // "Lot ##" (100 combinations) collided often enough across a
+            // full test run to intermittently break the real unique
+            // constraint on (building_id, number) — widened well past what
+            // the whole suite could plausibly exhaust.
+            'number' => strtoupper(fake()->unique()->bothify('Lot-####')),
             'owner_name' => fake()->name(),
             'owner_phone' => fake()->numerify('+2126########'),
             'owner_email' => fake()->safeEmail(),
