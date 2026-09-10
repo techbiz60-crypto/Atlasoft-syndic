@@ -227,6 +227,8 @@ export const fr = {
     numberPlaceholder: 'A12',
     floorLabel: 'Étage',
     floorPlaceholder: 'RDC, 1, 2…',
+    floorNotSpecified: 'Non précisé',
+    floorGround: 'Rez-de-chaussée',
     ownerNameLabel: 'Nom du copropriétaire',
     ownerPhoneLabel: 'Téléphone',
     ownerEmailLabel: 'Email',

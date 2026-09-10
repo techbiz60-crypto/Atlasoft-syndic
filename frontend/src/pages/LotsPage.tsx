@@ -728,12 +728,15 @@ export function LotsPage() {
             </Field>
 
             <Field label={t('lots.floorLabel')} htmlFor="lot-floor">
-              <Input
-                id="lot-floor"
-                placeholder={t('lots.floorPlaceholder')}
-                value={form.floor}
-                onChange={updateField('floor')}
-              />
+              <Select id="lot-floor" value={form.floor} onChange={updateField('floor')}>
+                <option value="">{t('lots.floorNotSpecified')}</option>
+                <option value="RDC">{t('lots.floorGround')}</option>
+                {Array.from({ length: 20 }, (_, index) => index + 1).map((floor) => (
+                  <option key={floor} value={floor}>
+                    {floor}
+                  </option>
+                ))}
+              </Select>
             </Field>
 
             <Field label={t('lots.ownerNameLabel')} htmlFor="owner-name">

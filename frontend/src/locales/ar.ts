@@ -239,6 +239,8 @@ export const ar: TranslationResource = {
     numberPlaceholder: 'A12',
     floorLabel: 'الطابق',
     floorPlaceholder: 'الطابق الأرضي، 1، 2…',
+    floorNotSpecified: 'غير محدد',
+    floorGround: 'الطابق الأرضي',
     ownerNameLabel: 'اسم المالك المشترك',
     ownerPhoneLabel: 'الهاتف',
     ownerEmailLabel: 'البريد الإلكتروني',
