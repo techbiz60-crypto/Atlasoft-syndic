@@ -186,6 +186,7 @@ export const fr = {
     nameLabel: 'Nom',
     namePlaceholder: 'Studio, Duplex…',
     amountLabel: 'Montant mensuel initial (DH)',
+    effectiveDateLabel: "Date d'effet",
     historyTitle: 'Historique des montants — {{name}}',
     colAmount: 'Montant',
     colEffectiveDate: "Date d'effet",

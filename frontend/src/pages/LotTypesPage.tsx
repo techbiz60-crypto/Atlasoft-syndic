@@ -27,6 +27,7 @@ export function LotTypesPage() {
 
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
+  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().slice(0, 10));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [historyFor, setHistoryFor] = useState<LotType | null>(null);
@@ -59,9 +60,10 @@ export function LotTypesPage() {
     setIsSubmitting(true);
 
     try {
-      await api.post('/api/lot-types', { name, amount: Number(amount) });
+      await api.post('/api/lot-types', { name, amount: Number(amount), effective_date: effectiveDate });
       setName('');
       setAmount('');
+      setEffectiveDate(new Date().toISOString().slice(0, 10));
       await loadLotTypes();
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -170,6 +172,16 @@ export function LotTypesPage() {
                 min={0}
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
+                required
+              />
+            </Field>
+
+            <Field label={t('lotTypes.effectiveDateLabel')} htmlFor="lot-type-effective-date">
+              <Input
+                id="lot-type-effective-date"
+                type="date"
+                value={effectiveDate}
+                onChange={(event) => setEffectiveDate(event.target.value)}
                 required
               />
             </Field>

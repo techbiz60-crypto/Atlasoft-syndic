@@ -198,6 +198,7 @@ export const ar: TranslationResource = {
     nameLabel: 'الاسم',
     namePlaceholder: 'استوديو، دوبليكس…',
     amountLabel: 'المبلغ الشهري الأولي (درهم)',
+    effectiveDateLabel: 'تاريخ السريان',
     historyTitle: 'تاريخ المبالغ — {{name}}',
     colAmount: 'المبلغ',
     colEffectiveDate: 'تاريخ السريان',
