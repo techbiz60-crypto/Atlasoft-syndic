@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LogoMark } from './Logo';
 import {
   AlertTriangle,
+  BookOpen,
   Building2,
   CreditCard,
   FileText,
@@ -167,6 +168,16 @@ export function Layout() {
         </nav>
 
         <div className="mt-6 border-t border-white/10 pt-4">
+          {user.role !== 'coproprietaire' && (
+            <NavLink
+              to="/guide"
+              className={navItemClass}
+              title={collapsed ? t('nav.guide') : undefined}
+            >
+              <BookOpen className="size-4.5 shrink-0" />
+              {!collapsed && t('nav.guide')}
+            </NavLink>
+          )}
           <NavLink
             to="/mon-compte"
             title={collapsed ? t('nav.myAccount') : undefined}

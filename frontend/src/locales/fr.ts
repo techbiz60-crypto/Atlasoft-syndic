@@ -61,6 +61,7 @@ export const fr = {
     residenceSettings: 'Paramètres résidence',
     users: 'Utilisateurs',
     rolePermissions: 'Rôles et permissions',
+    guide: "Guide d'utilisation",
     logout: 'Se déconnecter',
     collapseSidebar: 'Réduire le menu',
     expandSidebar: 'Agrandir le menu',
@@ -686,6 +687,94 @@ export const fr = {
     activateSuccess: 'Abonnement de {{name}} activé.',
     confirmDeactivate: 'Désactiver l\'abonnement de {{name}} immédiatement ?',
     deactivateSuccess: 'Abonnement de {{name}} désactivé.',
+  },
+  guide: {
+    title: "Guide d'utilisation",
+    subtitle: 'Comment gérer votre résidence avec Atlasoft Syndic, étape par étape.',
+    adminOnlyBadge: 'Administrateur',
+    sections: [
+      {
+        title: '1. Premiers pas',
+        items: [
+          {
+            title: 'Configurer votre résidence',
+            steps: [
+              "Renseignez le nom, l'adresse, le nombre d'appartements et le RIB dans Paramètres résidence.",
+              "Si la résidence existait déjà avant Atlasoft, indiquez le solde d'ouverture de la trésorerie à la date de votre bascule.",
+              'Ajoutez vos immeubles (bâtiments A, B, C…) puis vos types de lot (appartement, magasin, garage…) avant de créer les appartements.',
+            ],
+          },
+          {
+            title: 'Ajouter les appartements',
+            steps: [
+              "Depuis Appartements, ajoutez-les un par un ou collez une liste depuis Excel avec l'import en masse.",
+              "Renseignez le nom du propriétaire, son téléphone, son email et l'étage pour chaque lot.",
+              'Chaque copropriétaire peut ensuite se connecter avec son propre compte pour consulter ses paiements.',
+            ],
+          },
+        ],
+      },
+      {
+        title: '2. Cotisations et paiements',
+        items: [
+          {
+            title: 'Générer les appels de fonds',
+            steps: [
+              "Dans Cotisations, définissez le montant par appartement (ou par type de lot) et la période concernée.",
+              "Un changement de tarif en cours d'année ne modifie que les appels futurs — les périodes déjà appelées restent inchangées.",
+              "Le solde d'ouverture (arriérés avant Atlasoft) se saisit séparément et n'entre jamais en collision avec une cotisation normale de la même période.",
+            ],
+          },
+          {
+            title: 'Enregistrer un paiement',
+            steps: [
+              'Depuis Paiements, choisissez l’appartement, le montant reçu et le mode de règlement (virement, espèces, chèque).',
+              'Le paiement s’impute automatiquement sur les cotisations les plus anciennes impayées.',
+              'La page Impayés vous montre en temps réel qui doit quoi, mois par mois.',
+            ],
+          },
+        ],
+      },
+      {
+        title: '3. Dépenses, recettes et trésorerie',
+        items: [
+          {
+            title: 'Suivre les dépenses et recettes',
+            steps: [
+              'Classez chaque dépense ou recette dans une catégorie (entretien, gardiennage, électricité…) pour des rapports plus clairs.',
+              'La Trésorerie affiche le solde en caisse en temps réel et le grand livre de tous les mouvements.',
+            ],
+          },
+        ],
+      },
+      {
+        title: '4. Rapports et assemblée générale',
+        items: [
+          {
+            title: 'Consulter les rapports',
+            steps: [
+              'Le Rapport paiements donne une vue imprimable de la situation de chaque appartement.',
+              "Le rapport Assemblée générale reprend l'exercice financier borné par la date de votre AG, prêt à présenter aux copropriétaires.",
+              "Définissez la date de l'AG dans Paramètres résidence pour que l'exercice soit correctement calculé chaque année.",
+            ],
+          },
+        ],
+      },
+      {
+        title: '5. Gestion des accès (administrateur)',
+        adminOnly: true,
+        items: [
+          {
+            title: 'Ajouter un trésorier ou un membre du conseil',
+            steps: [
+              "Depuis Utilisateurs, créez un compte pour votre trésorier ou un membre du conseil syndical — un mot de passe est généré automatiquement, à leur transmettre.",
+              'Dans Rôles et permissions, choisissez précisément ce que chaque rôle peut voir ou modifier.',
+              'Un copropriétaire n’a accès qu’à ses propres paiements et documents, jamais à ceux des autres appartements.',
+            ],
+          },
+        ],
+      },
+    ],
   },
 };
 

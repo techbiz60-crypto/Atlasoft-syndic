@@ -31,6 +31,7 @@ import { UsersPage } from './pages/UsersPage';
 import { RolePermissionsPage } from './pages/RolePermissionsPage';
 import { PaymentsReportPage } from './pages/PaymentsReportPage';
 import { AgReportPage } from './pages/AgReportPage';
+import { GuidePage } from './pages/GuidePage';
 
 /**
  * The public landing page for guests — but a signed-in user landing on "/"
@@ -89,6 +90,7 @@ function App() {
               <Route path="/utilisateurs" element={<UsersPage />} />
               <Route path="/permissions" element={<RolePermissionsPage />} />
               <Route path="/abonnement" element={<SubscriptionPage />} />
+              <Route path="/guide" element={<GuidePage />} />
             </Route>
           </Route>
           <Route element={<PlatformProtectedRoute />}>
