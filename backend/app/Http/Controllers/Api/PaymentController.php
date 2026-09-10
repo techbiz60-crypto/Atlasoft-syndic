@@ -214,6 +214,7 @@ class PaymentController extends Controller
     {
         return DB::transaction(function () use ($lot, $year, $remainingAmount, $request, $batchId) {
             $allCallsThisYear = $lot->fundCalls()
+                ->where('is_opening_balance', false)
                 ->whereYear('period', $year)
                 ->orderBy('period')
                 ->get();
@@ -289,7 +290,12 @@ class PaymentController extends Controller
     private function settleSelectedMonths(Lot $lot, int $year, array $months, Request $request, string $batchId): array
     {
         return DB::transaction(function () use ($lot, $year, $months, $request, $batchId) {
+            // is_opening_balance rows share the "month" of whatever period
+            // they were dated at (often a real calendar month), so without
+            // this filter, selecting that month here would settle the
+            // pre-platform debt instead of that month's actual cotisation.
             $existingCalls = $lot->fundCalls()
+                ->where('is_opening_balance', false)
                 ->whereYear('period', $year)
                 ->get()
                 ->keyBy(fn (FundCall $call) => $call->period->month);

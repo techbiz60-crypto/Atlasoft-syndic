@@ -135,6 +135,44 @@ class BulkPaymentTest extends TestCase
         $this->assertTrue($calls->every(fn (FundCall $call) => $call->status === 'paid'));
     }
 
+    /**
+     * The exact real-world case this test guards: a duplex with a
+     * pre-platform opening balance dated 01/07 got its July checkbox
+     * mistakenly settling the 1000 DH opening balance instead of billing a
+     * real July cotisation — because both share month 7 and the lookup
+     * wasn't excluding is_opening_balance rows.
+     */
+    public function test_selecting_a_month_that_shares_its_number_with_the_opening_balance_still_bills_a_real_cotisation(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence, 300);
+
+        $openingBalance = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 1000,
+            'period' => Carbon::create(2026, 7, 1),
+            'is_opening_balance' => true,
+        ]);
+
+        $this->actingAs($admin)->postJson("/api/lots/{$lot->id}/payments/bulk", [
+            'months' => [7],
+            'year' => 2026,
+            'paid_at' => '2026-07-15',
+            'method' => PaymentMethod::Especes->value,
+        ])->assertCreated()->assertJsonPath('months_settled', 1);
+
+        // The opening balance is untouched — a real July cotisation was
+        // created and paid instead.
+        $this->assertSame(0, $openingBalance->fresh()->paid_amount);
+
+        $july = FundCall::where('is_opening_balance', false)
+            ->whereYear('period', 2026)->whereMonth('period', 7)
+            ->where('lot_id', $lot->id)->first();
+        $this->assertNotNull($july);
+        $this->assertSame(300, $july->amount);
+        $this->assertSame('paid', $july->status);
+    }
+
     public function test_selecting_months_tops_up_an_already_partially_paid_month(): void
     {
         $residence = Residence::factory()->create();

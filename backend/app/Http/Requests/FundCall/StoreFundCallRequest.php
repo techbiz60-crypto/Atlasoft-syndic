@@ -28,7 +28,9 @@ class StoreFundCallRequest extends FormRequest
             'period' => [
                 'required',
                 'date',
-                Rule::unique('fund_calls')->where('lot_id', $this->input('lot_id')),
+                Rule::unique('fund_calls')
+                    ->where('lot_id', $this->input('lot_id'))
+                    ->where('is_opening_balance', $this->boolean('is_opening_balance')),
             ],
             'is_opening_balance' => [
                 'sometimes',
