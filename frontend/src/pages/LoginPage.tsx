@@ -19,6 +19,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const justVerified = searchParams.get('verified') === '1';
+  const justReset = searchParams.get('reset') === '1';
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -50,6 +51,7 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {justVerified && <SuccessAlert>{t('auth.login.emailVerified')}</SuccessAlert>}
+            {justReset && <SuccessAlert>{t('auth.login.passwordReset')}</SuccessAlert>}
             {error && <ErrorAlert>{error}</ErrorAlert>}
 
             <Field label={t('auth.login.email')} htmlFor="email">
@@ -71,6 +73,10 @@ export function LoginPage() {
                 required
               />
             </Field>
+
+            <Link to="/mot-de-passe-oublie" className="-mt-2 text-end text-sm font-medium text-brand-600 hover:text-brand-700">
+              {t('auth.login.forgotPassword')}
+            </Link>
 
             <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
               {t('auth.login.submit')}

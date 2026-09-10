@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Mail;
+
+use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class ResetPasswordMail extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public function __construct(
+        public User $user,
+        public string $resetUrl,
+    ) {}
+
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: $this->user->locale === 'ar' ? 'إعادة تعيين كلمة المرور — Atlasoft Syndic' : 'Réinitialisation de mot de passe — Atlasoft Syndic',
+        );
+    }
+
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.reset-password',
+            with: [
+                'name' => $this->user->name,
+                'url' => $this->resetUrl,
+                'isArabic' => $this->user->locale === 'ar',
+                'expireMinutes' => config('auth.passwords.users.expire'),
+            ],
+        );
+    }
+}

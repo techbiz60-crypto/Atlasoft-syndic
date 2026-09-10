@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdatePasswordRequest;
 use App\Models\Building;
 use App\Models\ExpenseCategory;
@@ -15,10 +17,12 @@ use App\Models\User;
 use App\Role;
 use App\SubscriptionPlan;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -107,6 +111,38 @@ class AuthController extends Controller
     public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {
         $request->user()->update(['password' => $request->validated('password')]);
+
+        return response()->json(status: 204);
+    }
+
+    /**
+     * Deliberately the same response whether the email belongs to an
+     * account or not — otherwise this endpoint becomes a way to check who
+     * has one.
+     */
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $status = Password::sendResetLink($request->only('email'));
+
+        if ($status === PasswordBroker::RESET_THROTTLED) {
+            return response()->json(['message' => 'Veuillez patienter avant de redemander un lien.'], 429);
+        }
+
+        return response()->json([
+            'message' => 'Si un compte existe avec cette adresse, un lien de réinitialisation vient de lui être envoyé.',
+        ]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill(['password' => $password])->save();
+            }
+        );
+
+        abort_unless($status === PasswordBroker::PASSWORD_RESET, 422, 'Ce lien de réinitialisation est invalide ou a expiré.');
 
         return response()->json(status: 204);
     }

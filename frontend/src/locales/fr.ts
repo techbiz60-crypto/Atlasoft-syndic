@@ -109,6 +109,19 @@ export const fr = {
       noAccount: 'Pas encore de compte ?',
       createResidence: 'Créer ma résidence',
       emailVerified: 'Adresse email vérifiée. Vous pouvez vous connecter.',
+      forgotPassword: 'Mot de passe oublié ?',
+      passwordReset: 'Mot de passe modifié. Vous pouvez vous connecter.',
+    },
+    forgotPassword: {
+      title: 'Mot de passe oublié',
+      subtitle: 'Indiquez votre email, nous vous enverrons un lien pour choisir un nouveau mot de passe.',
+      submit: 'Envoyer le lien',
+      backToLogin: 'Retour à la connexion',
+    },
+    resetPassword: {
+      title: 'Nouveau mot de passe',
+      submit: 'Enregistrer le nouveau mot de passe',
+      missingLink: "Ce lien de réinitialisation est incomplet ou invalide. Redemandez-en un depuis la page de connexion.",
     },
     register: {
       title: 'Créer ma résidence',
