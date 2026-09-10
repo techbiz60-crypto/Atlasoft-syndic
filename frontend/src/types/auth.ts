@@ -37,6 +37,9 @@ export interface Residence {
   lots_count: number;
   bank_rib: string | null;
   opening_balance: number;
+  /** ISO datetime of the last syndic handover, or null if none happened — any
+   * financial record created before it is frozen, for every role. */
+  mandate_lock_boundary: string | null;
 }
 
 export interface User {
@@ -46,10 +49,27 @@ export interface User {
   name: string;
   email: string;
   email_verified_at: string | null;
+  /** Set at a syndic handover — the account keeps read access but every write route rejects it. */
+  deactivated_at: string | null;
   whatsapp_number: string | null;
   is_platform_admin: boolean;
   /** Null only for a platform admin account — every tenant user always has one. */
   residence: Residence | null;
+}
+
+export interface SyndicMandateClosureUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface SyndicMandateClosure {
+  id: number;
+  closed_at: string;
+  closed_by: SyndicMandateClosureUser | null;
+  new_admin: SyndicMandateClosureUser | null;
+  reopened_at: string | null;
+  reopened_reason: string | null;
 }
 
 export interface PlatformResidence {

@@ -217,6 +217,8 @@ class FundCallController extends Controller
             'Impossible de supprimer un appel de fonds qui a déjà reçu des paiements.'
         );
 
+        $this->abortIfLocked($fundCall);
+
         $fundCall->delete();
 
         return response()->json(status: 204);
@@ -230,9 +232,19 @@ class FundCallController extends Controller
     public function updateOpeningBalance(UpdateOpeningBalanceRequest $request, FundCall $fundCall): JsonResponse
     {
         abort_unless($fundCall->is_opening_balance, 404);
+        $this->abortIfLocked($fundCall);
 
         $fundCall->update($request->validated());
 
         return response()->json(['data' => $fundCall->fresh(['lot', 'payments'])]);
+    }
+
+    private function abortIfLocked(FundCall $fundCall): void
+    {
+        abort_if(
+            $fundCall->residence->isLockedForEditing($fundCall->created_at),
+            403,
+            'Cet appel de fonds a été saisi avant la dernière clôture de syndic et ne peut plus être modifié.'
+        );
     }
 }

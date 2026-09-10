@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\LotReferenceController;
 use App\Http\Controllers\Api\LotTypeController;
 use App\Http\Controllers\Api\LotTypeRateController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\Platform\MandateController as PlatformMandateController;
 use App\Http\Controllers\Api\Platform\SubscriptionsController as PlatformSubscriptionsController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ResidenceController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Api\RevenueCategoryController;
 use App\Http\Controllers\Api\RevenueController;
 use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\SyndicTransitionController;
 use App\Http\Controllers\Api\TreasuryReportController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -74,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/subscription', [SubscriptionController::class, 'show']);
         Route::get('/subscription/invoices', [SubscriptionController::class, 'invoices']);
 
-        Route::middleware('subscription.active')->group(function () {
+        Route::middleware(['subscription.active', 'active'])->group(function () {
             Route::middleware(['admin'])->group(function () {
                 Route::put('/residence', [ResidenceController::class, 'update']);
                 Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
@@ -88,6 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
                 Route::post('/lots/{lot}/access', [LotAccessController::class, 'store']);
+
+                Route::get('/syndic-transition', [SyndicTransitionController::class, 'show']);
+                Route::post('/syndic-transition', [SyndicTransitionController::class, 'store']);
             });
 
             Route::middleware(['permission:immeubles.gerer'])->group(function () {
@@ -159,5 +164,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/residences', [PlatformSubscriptionsController::class, 'index']);
         Route::post('/residences/{residence}/activate', [PlatformSubscriptionsController::class, 'activate']);
         Route::post('/residences/{residence}/deactivate', [PlatformSubscriptionsController::class, 'deactivate']);
+        Route::post('/residences/{residence}/reopen-mandate', [PlatformMandateController::class, 'reopen']);
     });
 });

@@ -88,6 +88,7 @@ class PaymentController extends Controller
     public function update(StorePaymentRequest $request, FundCall $fundCall, Payment $payment): JsonResponse
     {
         abort_unless($payment->fund_call_id === $fundCall->id, 404);
+        $this->abortIfLocked($payment);
 
         $payment->update($request->validated());
 
@@ -97,6 +98,7 @@ class PaymentController extends Controller
     public function destroy(FundCall $fundCall, Payment $payment): JsonResponse
     {
         abort_unless($payment->fund_call_id === $fundCall->id, 404);
+        $this->abortIfLocked($payment);
 
         $payment->delete();
 
@@ -132,6 +134,7 @@ class PaymentController extends Controller
         $existingPayments = Payment::with('fundCall.lot')->where('batch_id', $batchId)->get();
 
         abort_if($existingPayments->isEmpty(), 404);
+        $existingPayments->each(fn (Payment $payment) => $this->abortIfLocked($payment));
 
         $lot = $existingPayments->first()->fundCall->lot;
         $year = $request->integer('year');
@@ -153,6 +156,7 @@ class PaymentController extends Controller
         $payments = Payment::where('batch_id', $batchId)->get();
 
         abort_if($payments->isEmpty(), 404);
+        $payments->each(fn (Payment $payment) => $this->abortIfLocked($payment));
 
         Payment::whereIn('id', $payments->pluck('id'))->delete();
 
@@ -341,6 +345,15 @@ class PaymentController extends Controller
 
             return ['months_settled' => $monthsSettled, 'unallocated' => 0];
         });
+    }
+
+    private function abortIfLocked(Payment $payment): void
+    {
+        abort_if(
+            $payment->residence->isLockedForEditing($payment->created_at),
+            403,
+            'Ce paiement a été saisi avant la dernière clôture de syndic et ne peut plus être modifié.'
+        );
     }
 
     private function rateFor(Lot $lot, Carbon $period): ?LotTypeRate

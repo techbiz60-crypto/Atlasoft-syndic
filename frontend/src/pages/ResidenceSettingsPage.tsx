@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Copy, Plus, Save, ShieldAlert, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
-import type { Residence } from '../types/auth';
+import type { Residence, SyndicMandateClosure } from '../types/auth';
 import type { GeneralAssembly } from '../types/resources';
 import { PageHeader } from '../components/PageHeader';
 import { Field, Input } from '../components/ui/Input';
@@ -122,6 +122,7 @@ export function ResidenceSettingsPage() {
       </form>
 
       <GeneralAssembliesSection />
+      <SyndicTransitionSection residenceName={form.name} />
     </div>
   );
 }
@@ -270,6 +271,176 @@ function GeneralAssembliesSection() {
             </Button>
           </form>
         </div>
+      )}
+    </div>
+  );
+}
+
+function SyndicTransitionSection({ residenceName }: { residenceName: string }) {
+  const { t } = useTranslation();
+  const [history, setHistory] = useState<SyndicMandateClosure[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState<{ email: string; password: string } | null>(null);
+
+  const [form, setForm] = useState({ confirmation_text: '', password: '', new_admin_name: '', new_admin_email: '' });
+
+  async function loadHistory() {
+    setIsLoading(true);
+    try {
+      const { data } = await api.get<{ data: { current_lock: SyndicMandateClosure | null; history: SyndicMandateClosure[] } }>(
+        '/api/syndic-transition',
+      );
+      setHistory(data.data.history);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await api.post<{ data: { email: string }; generated_password: string }>('/api/syndic-transition', form);
+      setResult({ email: data.data.email, password: data.generated_password });
+      setForm({ confirmation_text: '', password: '', new_admin_name: '', new_admin_email: '' });
+      setShowForm(false);
+      await loadHistory();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function copyPassword() {
+    if (result) {
+      void navigator.clipboard.writeText(result.password);
+    }
+  }
+
+  return (
+    <div className="mt-8 max-w-lg rounded-xl border border-rose-200 bg-rose-50/40 p-6 shadow-sm">
+      <div className="flex items-center gap-2">
+        <ShieldAlert className="size-4.5 shrink-0 text-rose-600" />
+        <h2 className="text-sm font-semibold text-slate-900">{t('syndicTransition.title')}</h2>
+      </div>
+      <p className="mt-1 text-sm text-slate-500">{t('syndicTransition.subtitle')}</p>
+
+      {error && (
+        <div className="mt-4">
+          <ErrorAlert>{error}</ErrorAlert>
+        </div>
+      )}
+
+      {result && (
+        <div className="mt-4">
+          <SuccessAlert>
+            <div className="flex flex-wrap items-center gap-2">
+              <span>
+                {t('syndicTransition.resultLabel', { email: result.email })}{' '}
+                <span className="font-mono font-semibold">{result.password}</span>
+              </span>
+              <button
+                type="button"
+                onClick={copyPassword}
+                className="inline-flex items-center gap-1 rounded-lg border border-current px-2 py-1 text-xs font-medium"
+              >
+                <Copy className="size-3.5" />
+                {t('users.copyButton')}
+              </button>
+            </div>
+          </SuccessAlert>
+        </div>
+      )}
+
+      {!isLoading && history.length > 0 && (
+        <div className="mt-4 flex flex-col gap-2 border-t border-rose-100 pt-4">
+          <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('syndicTransition.historyTitle')}</p>
+          {history.map((closure) => (
+            <div key={closure.id} className="text-sm text-slate-600">
+              {t('syndicTransition.historyLine', {
+                date: new Date(closure.closed_at).toLocaleDateString(),
+                admin: closure.closed_by?.name ?? '—',
+                newAdmin: closure.new_admin?.name ?? '—',
+              })}
+              {closure.reopened_at && (
+                <span className="ms-1 text-xs font-medium text-amber-600">{t('syndicTransition.reopenedTag')}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!showForm ? (
+        <Button type="button" variant="danger" className="mt-4" onClick={() => setShowForm(true)}>
+          <ShieldAlert className="size-4" />
+          {t('syndicTransition.startButton')}
+        </Button>
+      ) : (
+        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4 border-t border-rose-100 pt-4">
+          <p className="text-sm text-slate-600">{t('syndicTransition.warning')}</p>
+
+          <Field label={t('syndicTransition.newAdminNameLabel')} htmlFor="new-admin-name">
+            <Input
+              id="new-admin-name"
+              value={form.new_admin_name}
+              onChange={(event) => setForm((previous) => ({ ...previous, new_admin_name: event.target.value }))}
+              required
+            />
+          </Field>
+
+          <Field label={t('syndicTransition.newAdminEmailLabel')} htmlFor="new-admin-email">
+            <Input
+              id="new-admin-email"
+              type="email"
+              value={form.new_admin_email}
+              onChange={(event) => setForm((previous) => ({ ...previous, new_admin_email: event.target.value }))}
+              required
+            />
+          </Field>
+
+          <Field
+            label={t('syndicTransition.confirmationTextLabel', { name: residenceName })}
+            htmlFor="confirmation-text"
+          >
+            <Input
+              id="confirmation-text"
+              value={form.confirmation_text}
+              onChange={(event) => setForm((previous) => ({ ...previous, confirmation_text: event.target.value }))}
+              required
+            />
+          </Field>
+
+          <Field label={t('syndicTransition.passwordLabel')} htmlFor="confirm-password">
+            <Input
+              id="confirm-password"
+              type="password"
+              value={form.password}
+              onChange={(event) => setForm((previous) => ({ ...previous, password: event.target.value }))}
+              required
+            />
+          </Field>
+
+          <div className="flex gap-2">
+            <Button type="submit" variant="danger" isLoading={isSubmitting}>
+              {t('syndicTransition.confirmButton')}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
+              {t('common.cancel')}
+            </Button>
+          </div>
+        </form>
       )}
     </div>
   );

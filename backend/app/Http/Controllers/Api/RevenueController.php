@@ -42,6 +42,12 @@ class RevenueController extends Controller
 
     public function destroy(Revenue $revenue): JsonResponse
     {
+        abort_if(
+            $revenue->residence->isLockedForEditing($revenue->created_at),
+            403,
+            'Cette recette a été saisie avant la dernière clôture de syndic et ne peut plus être modifiée.'
+        );
+
         if ($revenue->receipt_path) {
             Storage::delete($revenue->receipt_path);
         }

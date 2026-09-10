@@ -688,6 +688,24 @@ export const fr = {
     confirmDeactivate: 'Désactiver l\'abonnement de {{name}} immédiatement ?',
     deactivateSuccess: 'Abonnement de {{name}} désactivé.',
   },
+  syndicTransition: {
+    deactivatedBanner: 'Ce compte a été désactivé suite à une passation de syndic — accès en lecture seule.',
+    title: 'Clôture et passation de syndic',
+    subtitle:
+      "Terminez votre mandat et transmettez la résidence à un nouveau syndic. Toutes les données financières déjà saisies seront gelées et resteront consultables, mais ni vous ni le nouveau syndic ne pourrez plus les modifier.",
+    warning:
+      "Cette action est irréversible : votre compte (et ceux du trésorier/conseil actuels) passera en lecture seule, et un nouveau compte administrateur sera créé pour le nouveau syndic.",
+    newAdminNameLabel: 'Nom du nouvel administrateur',
+    newAdminEmailLabel: 'Email du nouvel administrateur',
+    confirmationTextLabel: 'Tapez "{{name}}" pour confirmer',
+    passwordLabel: 'Votre mot de passe',
+    confirmButton: 'Confirmer la passation',
+    startButton: 'Clôturer et transmettre à un nouveau syndic',
+    resultLabel: 'Compte créé pour {{email}} — mot de passe :',
+    historyTitle: 'Historique des passations',
+    historyLine: 'Clôturé le {{date}} par {{admin}} — nouvel administrateur : {{newAdmin}}',
+    reopenedTag: '(rouvert par le support Atlasoft)',
+  },
   guide: {
     title: "Guide d'utilisation",
     subtitle: 'Comment gérer votre résidence avec Atlasoft Syndic, étape par étape.',

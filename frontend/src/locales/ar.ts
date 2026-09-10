@@ -695,6 +695,24 @@ export const ar: TranslationResource = {
     confirmDeactivate: 'هل تريدون إيقاف اشتراك {{name}} فورًا؟',
     deactivateSuccess: 'تم إيقاف اشتراك {{name}}.',
   },
+  syndicTransition: {
+    deactivatedBanner: 'تم تعطيل هذا الحساب بعد تسليم مهام النقابة — الاطلاع فقط دون إمكانية التعديل.',
+    title: 'إغلاق وتسليم مهام النقابة',
+    subtitle:
+      'أنهوا مهامكم وسلّموا الإقامة لنقابة جديدة. جميع البيانات المالية المُدخَلة ستُجمَّد وتبقى قابلة للاطلاع، لكن لن يتمكن أي منكم أو من النقابة الجديدة من تعديلها.',
+    warning:
+      'هذا الإجراء نهائي: سيتحول حسابكم (وحسابات أمين المال وأعضاء المجلس الحاليين) إلى وضع القراءة فقط، وسيتم إنشاء حساب مدير جديد للنقابة القادمة.',
+    newAdminNameLabel: 'اسم المدير الجديد',
+    newAdminEmailLabel: 'بريد المدير الجديد الإلكتروني',
+    confirmationTextLabel: 'اكتبوا "{{name}}" للتأكيد',
+    passwordLabel: 'كلمة مروركم',
+    confirmButton: 'تأكيد التسليم',
+    startButton: 'إغلاق وتسليم المهام لنقابة جديدة',
+    resultLabel: 'تم إنشاء حساب لـ {{email}} — كلمة المرور:',
+    historyTitle: 'سجل عمليات التسليم',
+    historyLine: 'أُغلق في {{date}} بواسطة {{admin}} — المدير الجديد: {{newAdmin}}',
+    reopenedTag: '(أعاد فتحه دعم Atlasoft)',
+  },
   guide: {
     title: 'دليل الاستخدام',
     subtitle: 'كيفية إدارة إقامتكم عبر Atlasoft Syndic، خطوة بخطوة.',

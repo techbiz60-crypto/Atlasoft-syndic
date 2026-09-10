@@ -43,6 +43,8 @@ class ExpenseController extends Controller
 
     public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
     {
+        $this->abortIfLocked($expense);
+
         $data = $request->safe()->except('receipt');
 
         if ($request->hasFile('receipt')) {
@@ -59,6 +61,8 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): JsonResponse
     {
+        $this->abortIfLocked($expense);
+
         if ($expense->receipt_path) {
             Storage::delete($expense->receipt_path);
         }
@@ -73,5 +77,14 @@ class ExpenseController extends Controller
         abort_unless($expense->receipt_path && Storage::exists($expense->receipt_path), 404);
 
         return Storage::response($expense->receipt_path);
+    }
+
+    private function abortIfLocked(Expense $expense): void
+    {
+        abort_if(
+            $expense->residence->isLockedForEditing($expense->created_at),
+            403,
+            'Cette dépense a été saisie avant la dernière clôture de syndic et ne peut plus être modifiée.'
+        );
     }
 }

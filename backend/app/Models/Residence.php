@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Role;
 use Database\Factories\ResidenceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,19 @@ class Residence extends Model
 {
     /** @use HasFactory<ResidenceFactory> */
     use HasFactory;
+
+    protected $appends = ['mandate_lock_boundary'];
+
+    /**
+     * When set, the frontend uses this to grey out edit/delete controls on
+     * any financial record created before it — kept as a plain ISO string
+     * rather than requiring the client to fetch mandate history just to
+     * know whether a record is frozen.
+     */
+    protected function mandateLockBoundary(): Attribute
+    {
+        return Attribute::get(fn () => $this->currentMandateLock()?->closed_at);
+    }
 
     /**
      * Financial rights (cotisations/dépenses/recettes) default to granted
@@ -70,6 +84,36 @@ class Residence extends Model
     public function generalAssemblies(): HasMany
     {
         return $this->hasMany(GeneralAssembly::class);
+    }
+
+    public function mandateClosures(): HasMany
+    {
+        return $this->hasMany(SyndicMandateClosure::class);
+    }
+
+    /**
+     * The most recent syndic handover that hasn't been lifted by an Atlasoft
+     * support intervention — null means no financial lock is in effect.
+     */
+    public function currentMandateLock(): ?SyndicMandateClosure
+    {
+        return $this->mandateClosures()->whereNull('reopened_at')->latest('closed_at')->first();
+    }
+
+    /**
+     * A financial record (fund call, payment, expense, revenue) created
+     * before the last handover is frozen for everyone, including the
+     * incoming syndic — the whole point being that neither side can rewrite
+     * what the other already declared. Records created afterwards, even for
+     * a period that predates the handover (e.g. finally collecting old
+     * arrears), are unaffected: this checks when the row itself was
+     * written, not the business date it refers to.
+     */
+    public function isLockedForEditing(Carbon $createdAt): bool
+    {
+        $lock = $this->currentMandateLock();
+
+        return $lock !== null && $createdAt->lt($lock->closed_at);
     }
 
     /**

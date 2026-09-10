@@ -48,6 +48,16 @@ class User extends Authenticatable implements MustVerifyEmailContract
     }
 
     /**
+     * Set at syndic handover for the outgoing admin/trésorier/conseil — the
+     * account keeps read access to its own history but is rejected by every
+     * write route, regardless of role or permissions.
+     */
+    public function isDeactivated(): bool
+    {
+        return $this->deactivated_at !== null;
+    }
+
+    /**
      * Admin is always allowed everything, no row needed. Every other role
      * only has what's been explicitly granted for their residence via
      * role_permissions — absence of a row means no.
@@ -92,6 +102,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return [
             'email_verified_at' => 'datetime',
+            'deactivated_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
             'is_platform_admin' => 'boolean',

@@ -28,6 +28,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SubscriptionBanner } from './SubscriptionBanner';
+import { DeactivatedAccountBanner } from './DeactivatedAccountBanner';
 
 export function Layout() {
   const { user, logout } = useAuth();
@@ -211,6 +212,7 @@ export function Layout() {
 
       <main className="flex flex-1 flex-col overflow-y-auto print:overflow-visible">
         <div className="no-print">
+          <DeactivatedAccountBanner />
           <SubscriptionBanner />
         </div>
         <div className="mx-auto w-full max-w-[1600px] px-8 py-8 lg:px-12 print:max-w-none print:p-0">

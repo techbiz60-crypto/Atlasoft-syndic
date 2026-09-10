@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureHasPermission;
 use App\Http\Middleware\EnsurePlatformAdmin;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'permission' => EnsureHasPermission::class,
             'subscription.active' => EnsureSubscriptionIsWritable::class,
+            'active' => EnsureAccountIsActive::class,
             'verified' => EnsureEmailIsVerified::class,
             'platform.admin' => EnsurePlatformAdmin::class,
             'tenant.user' => EnsureUserBelongsToResidence::class,
