@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { Field, Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
+import { planForLotsCount } from '../lib/plans';
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -18,13 +19,20 @@ export function RegisterPage() {
 
   const [form, setForm] = useState({
     residence_name: '',
+    address: '',
     lots_count: '',
+    opening_balance: '',
     name: '',
     email: '',
     whatsapp_number: '',
     password: '',
     password_confirmation: '',
   });
+
+  const matchingPlan = useMemo(() => {
+    const count = Number(form.lots_count);
+    return count > 0 ? planForLotsCount(count) : null;
+  }, [form.lots_count]);
 
   function updateField(field: keyof typeof form) {
     return (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +49,7 @@ export function RegisterPage() {
       await register({
         ...form,
         lots_count: Number(form.lots_count),
+        opening_balance: Math.round(Number(form.opening_balance)),
         locale: i18n.language,
       });
       navigate('/dashboard');
@@ -79,6 +88,10 @@ export function RegisterPage() {
               />
             </Field>
 
+            <Field label={t('auth.register.address')} htmlFor="address">
+              <Input id="address" value={form.address} onChange={updateField('address')} required />
+            </Field>
+
             <Field label={t('auth.register.lotsCount')} htmlFor="lots_count">
               <Input
                 id="lots_count"
@@ -86,6 +99,32 @@ export function RegisterPage() {
                 min={1}
                 value={form.lots_count}
                 onChange={updateField('lots_count')}
+                required
+              />
+            </Field>
+
+            {matchingPlan && (
+              <div className="flex items-center justify-between rounded-lg border border-brand-200 bg-brand-50/60 px-3.5 py-2.5">
+                <span className="text-sm text-slate-700">
+                  {t('auth.register.matchingPlan', { plan: matchingPlan.label })}
+                </span>
+                <span className="text-sm font-bold text-brand-700">
+                  {matchingPlan.monthlyPrice !== null
+                    ? t('subscriptionPage.monthlyPrice', { amount: matchingPlan.monthlyPrice })
+                    : t('platform.planCustom')}
+                </span>
+              </div>
+            )}
+
+            <Field label={t('auth.register.openingBalance')} htmlFor="opening_balance">
+              <Input
+                id="opening_balance"
+                type="number"
+                min={0}
+                step={1}
+                placeholder="0"
+                value={form.opening_balance}
+                onChange={updateField('opening_balance')}
                 required
               />
             </Field>

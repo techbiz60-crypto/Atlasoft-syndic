@@ -21,3 +21,12 @@ export const upgradeablePlans: PlanCatalogEntry[] = [
   { plan: 'premium', label: 'Premium', maxLots: 100, monthlyPrice: 220, annualPrice: 2112 },
   { plan: 'custom', label: 'Sur devis', maxLots: null, monthlyPrice: null, annualPrice: null },
 ];
+
+const freePlan: PlanCatalogEntry = { plan: 'free', label: 'Gratuit', maxLots: 6, monthlyPrice: 0, annualPrice: 0 };
+
+export const planCatalog: PlanCatalogEntry[] = [freePlan, ...upgradeablePlans];
+
+/** Mirrors App\SubscriptionPlan::forLotsCount() — same thresholds, same order. */
+export function planForLotsCount(lotsCount: number): PlanCatalogEntry {
+  return planCatalog.find((entry) => entry.maxLots === null || lotsCount <= entry.maxLots) ?? freePlan;
+}

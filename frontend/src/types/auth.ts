@@ -81,11 +81,15 @@ export interface PlatformResidenceMandateLock {
 export interface PlatformResidence {
   residence_id: number;
   residence_name: string;
+  address: string | null;
   lots_count: number;
+  registration_ip: string | null;
   admin_name: string | null;
   admin_email: string | null;
   admin_whatsapp: string | null;
   subscription: Subscription | null;
   /** Non-null while a syndic handover freeze is active for this residence. */
   mandate_lock: PlatformResidenceMandateLock | null;
+  /** Human-readable reasons this residence shares an IP or address with another — empty when nothing looks suspicious. */
+  duplicate_reasons: string[];
 }

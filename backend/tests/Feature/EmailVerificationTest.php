@@ -21,6 +21,8 @@ class EmailVerificationTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 6,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'whatsapp_number' => '0600000000',
@@ -106,6 +108,8 @@ class EmailVerificationTest extends TestCase
         $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 6,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Karim',
             'email' => 'karim@example.com',
             'whatsapp_number' => '0600000000',

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
-#[Fillable(['name', 'address', 'lots_count', 'bank_rib', 'opening_balance'])]
+#[Fillable(['name', 'address', 'lots_count', 'bank_rib', 'opening_balance', 'registration_ip'])]
 class Residence extends Model
 {
     /** @use HasFactory<ResidenceFactory> */

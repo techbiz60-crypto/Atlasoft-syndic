@@ -17,6 +17,8 @@ class RegistrationTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Al Andalous',
             'lots_count' => 24,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Fatima Zahra',
             'email' => 'fatima@example.com',
             'whatsapp_number' => '+212600000000',
@@ -29,6 +31,8 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('residences', [
             'name' => 'Résidence Al Andalous',
             'lots_count' => 24,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
         ]);
 
         $residence = Residence::where('name', 'Résidence Al Andalous')->first();
@@ -49,7 +53,7 @@ class RegistrationTest extends TestCase
         $response = $this->postJson('/api/register', []);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['residence_name', 'lots_count', 'name', 'email', 'whatsapp_number', 'password']);
+            ->assertJsonValidationErrors(['residence_name', 'address', 'lots_count', 'opening_balance', 'name', 'email', 'whatsapp_number', 'password']);
     }
 
     public function test_email_must_be_unique(): void
@@ -59,6 +63,8 @@ class RegistrationTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 10,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Test',
             'email' => 'taken@example.com',
             'whatsapp_number' => '+212600000000',

@@ -31,7 +31,10 @@ class AuthController extends Controller
         $user = DB::transaction(function () use ($request) {
             $residence = Residence::create([
                 'name' => $request->string('residence_name'),
+                'address' => $request->string('address'),
                 'lots_count' => $request->integer('lots_count'),
+                'opening_balance' => $request->integer('opening_balance'),
+                'registration_ip' => $request->ip(),
             ]);
 
             Building::create([

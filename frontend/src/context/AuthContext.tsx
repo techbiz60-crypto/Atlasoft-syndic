@@ -6,7 +6,9 @@ import type { User } from '../types/auth';
 
 interface RegisterPayload {
   residence_name: string;
+  address: string;
   lots_count: number;
+  opening_balance: number;
   name: string;
   email: string;
   whatsapp_number: string;

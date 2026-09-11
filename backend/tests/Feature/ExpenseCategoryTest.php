@@ -18,6 +18,8 @@ class ExpenseCategoryTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 10,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Admin Test',
             'email' => 'admin-cat@example.com',
             'whatsapp_number' => '+212600000000',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { CheckCircle2, Lock, PauseCircle, Unlock, X } from 'lucide-react';
+import { CheckCircle2, Lock, PauseCircle, TriangleAlert, Unlock, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
@@ -152,6 +152,15 @@ export function PlatformClientsPage() {
               {t('platform.mandateLockedBadge')}
             </span>
           )}
+          {residence.duplicate_reasons.length > 0 && (
+            <span
+              title={residence.duplicate_reasons.join(' — ')}
+              className="ms-1.5 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+            >
+              <TriangleAlert className="size-3" />
+              {t('platform.duplicateBadge')}
+            </span>
+          )}
         </>
       ),
     },
@@ -163,6 +172,7 @@ export function PlatformClientsPage() {
         <>
           <div>{residence.admin_name ?? '—'}</div>
           <div className="text-xs text-slate-400">{residence.admin_email}</div>
+          {residence.registration_ip && <div className="text-xs text-slate-400">IP : {residence.registration_ip}</div>}
         </>
       ),
     },

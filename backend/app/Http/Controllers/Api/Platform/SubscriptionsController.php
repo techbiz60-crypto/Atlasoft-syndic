@@ -17,28 +17,51 @@ class SubscriptionsController extends Controller
 {
     public function index(): JsonResponse
     {
-        $residences = Residence::with(['subscription', 'users' => fn ($query) => $query->where('role', Role::Admin)])
+        $allResidences = Residence::with(['subscription', 'users' => fn ($query) => $query->where('role', Role::Admin)])
             ->orderBy('name')
-            ->get()
-            ->map(function (Residence $residence) {
-                $admin = $residence->users->first();
-                $lock = $residence->currentMandateLock()?->load('closedBy');
+            ->get();
 
-                return [
-                    'residence_id' => $residence->id,
-                    'residence_name' => $residence->name,
-                    'lots_count' => $residence->lots_count,
-                    'admin_name' => $admin?->name,
-                    'admin_email' => $admin?->email,
-                    'admin_whatsapp' => $admin?->whatsapp_number,
-                    'subscription' => $residence->subscription,
-                    'mandate_lock' => $lock ? [
-                        'id' => $lock->id,
-                        'closed_at' => $lock->closed_at,
-                        'closed_by_name' => $lock->closedBy?->name,
-                    ] : null,
-                ];
-            });
+        $byIp = $allResidences->whereNotNull('registration_ip')->groupBy('registration_ip')->filter(fn ($group) => $group->count() > 1);
+        $byAddress = $allResidences->whereNotNull('address')
+            ->groupBy(fn (Residence $residence) => mb_strtolower(trim($residence->address)))
+            ->filter(fn ($group) => $group->count() > 1);
+
+        $residences = $allResidences->map(function (Residence $residence) use ($byIp, $byAddress) {
+            $admin = $residence->users->first();
+            $lock = $residence->currentMandateLock()?->load('closedBy');
+
+            $reasons = [];
+
+            $sameIp = $byIp->get($residence->registration_ip)?->reject(fn (Residence $other) => $other->id === $residence->id);
+            if ($sameIp?->isNotEmpty()) {
+                $reasons[] = "Même IP d'inscription que : {$sameIp->pluck('name')->join(', ')}";
+            }
+
+            $sameAddress = $residence->address
+                ? $byAddress->get(mb_strtolower(trim($residence->address)))?->reject(fn (Residence $other) => $other->id === $residence->id)
+                : null;
+            if ($sameAddress?->isNotEmpty()) {
+                $reasons[] = "Même adresse que : {$sameAddress->pluck('name')->join(', ')}";
+            }
+
+            return [
+                'residence_id' => $residence->id,
+                'residence_name' => $residence->name,
+                'address' => $residence->address,
+                'lots_count' => $residence->lots_count,
+                'registration_ip' => $residence->registration_ip,
+                'admin_name' => $admin?->name,
+                'admin_email' => $admin?->email,
+                'admin_whatsapp' => $admin?->whatsapp_number,
+                'subscription' => $residence->subscription,
+                'mandate_lock' => $lock ? [
+                    'id' => $lock->id,
+                    'closed_at' => $lock->closed_at,
+                    'closed_by_name' => $lock->closedBy?->name,
+                ] : null,
+                'duplicate_reasons' => $reasons,
+            ];
+        });
 
         return response()->json(['data' => $residences]);
     }

@@ -20,6 +20,8 @@ class SubscriptionTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 6,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'whatsapp_number' => '0600000000',
@@ -42,6 +44,8 @@ class SubscriptionTest extends TestCase
         $response = $this->postJson('/api/register', [
             'residence_name' => 'Résidence Test',
             'lots_count' => 20,
+            'address' => '12 Rue Test',
+            'opening_balance' => 0,
             'name' => 'Admin',
             'email' => 'admin2@example.com',
             'whatsapp_number' => '0600000000',

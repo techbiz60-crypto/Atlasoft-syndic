@@ -115,4 +115,33 @@ class PlatformAdminTest extends TestCase
 
         $this->actingAs($platformAdmin)->getJson('/api/buildings')->assertForbidden();
     }
+
+    public function test_residences_sharing_a_registration_ip_are_flagged_as_possible_duplicates(): void
+    {
+        $residenceA = Residence::factory()->create(['name' => 'Résidence A', 'registration_ip' => '41.100.1.1']);
+        $residenceB = Residence::factory()->create(['name' => 'Résidence B', 'registration_ip' => '41.100.1.1']);
+        $residenceC = Residence::factory()->create(['name' => 'Résidence C', 'registration_ip' => '41.200.2.2']);
+        $platformAdmin = User::factory()->platformAdmin()->create();
+
+        $response = $this->actingAs($platformAdmin)->getJson('/api/platform/residences');
+
+        $byId = collect($response->json('data'))->keyBy('residence_id');
+
+        $this->assertStringContainsString('Résidence B', $byId[$residenceA->id]['duplicate_reasons'][0]);
+        $this->assertStringContainsString('Résidence A', $byId[$residenceB->id]['duplicate_reasons'][0]);
+        $this->assertEmpty($byId[$residenceC->id]['duplicate_reasons']);
+    }
+
+    public function test_residences_sharing_an_address_are_flagged_as_possible_duplicates(): void
+    {
+        $residenceA = Residence::factory()->create(['name' => 'Résidence A', 'address' => '12 Rue Test, Casablanca']);
+        $residenceB = Residence::factory()->create(['name' => 'Résidence B', 'address' => '12 rue test, casablanca']);
+        $platformAdmin = User::factory()->platformAdmin()->create();
+
+        $response = $this->actingAs($platformAdmin)->getJson('/api/platform/residences');
+
+        $byId = collect($response->json('data'))->keyBy('residence_id');
+
+        $this->assertStringContainsString('Résidence B', $byId[$residenceA->id]['duplicate_reasons'][0]);
+    }
 }
