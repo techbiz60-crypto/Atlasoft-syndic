@@ -164,6 +164,9 @@ export const ar: TranslationResource = {
   },
   dashboard: {
     welcome: 'مرحبًا، {{name}}',
+    setupCardTitle: 'أكملوا إعداد إقامتكم',
+    setupCardSubtitle: 'أنواع الشقق، الشقق، أول اشتراك — بضع خطوات لتكونوا جاهزين.',
+    setupCardButton: 'متابعة ←',
     roles: {
       admin: 'مدير',
       tresorier: 'أمين المال',
@@ -707,6 +710,43 @@ export const ar: TranslationResource = {
     reopenReasonLabel: 'السبب (يظهر في سجل الإقامة)',
     reopenConfirmButton: 'تأكيد إلغاء الحظر',
     reopenSuccess: 'تم إلغاء حظر إغلاق {{name}}.',
+  },
+  onboarding: {
+    exit: 'الإنهاء لاحقًا',
+    continue: 'متابعة',
+    skipStep: 'تخطي هذه الخطوة',
+    lotTypes: {
+      title: 'أنواع الشقق لديكم',
+      subtitle: 'شقة، محل، كراج… لكل نوع تسعيرته الشهرية الخاصة.',
+      nameLabel: 'الاسم',
+      amountLabel: 'التسعيرة الشهرية (درهم)',
+    },
+    buildings: {
+      title: 'العمارات لديكم',
+      subtitle: 'تم إنشاء عمارة رئيسية بالفعل — أضيفوا أخرى إذا كانت إقامتكم تضم عدة عمارات.',
+      nameLabel: 'اسم العمارة',
+    },
+    lots: {
+      title: 'الشقق لديكم',
+      subtitle: 'أضيفوها واحدة تلو الأخرى أو الصقوا لائحة من Excel — يتم ذلك في صفحة الشقق.',
+      noneYet: 'لم تتم إضافة أي شقة بعد.',
+      count: 'تمت إضافة {{count}} شقة حتى الآن.',
+      openButton: 'فتح صفحة الشقق',
+    },
+    cotisations: {
+      title: 'أول اشتراك',
+      subtitle: 'أصدروا طلبات الاشتراك للشهر الحالي لجميع شققكم.',
+      generateButton: 'إصدار اشتراكات هذا الشهر',
+    },
+    team: {
+      title: 'دعوة فريقكم',
+      subtitle: 'اختياري — يمكنكم دائمًا إضافة أعضاء لاحقًا من قسم المستخدمين.',
+    },
+    done: {
+      title: 'كل شيء جاهز!',
+      subtitle: 'تم إعداد إقامتكم. يمكنكم متابعة الإعداد في أي وقت من القوائم.',
+      button: 'الذهاب إلى لوحة التحكم',
+    },
   },
   syndicTransition: {
     deactivatedBanner: 'تم تعطيل هذا الحساب بعد تسليم مهام النقابة — الاطلاع فقط دون إمكانية التعديل.',

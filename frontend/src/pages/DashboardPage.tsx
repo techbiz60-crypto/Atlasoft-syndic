@@ -100,9 +100,22 @@ export function DashboardPage() {
     coproprietaire: t('dashboard.roles.coproprietaire'),
   };
 
+  const [needsSetup, setNeedsSetup] = useState(false);
+
   useEffect(() => {
     api.get<{ data: Building[] }>('/api/buildings').then(({ data }) => setBuildings(data.data));
   }, []);
+
+  useEffect(() => {
+    if (user?.role !== 'admin') {
+      return;
+    }
+
+    api
+      .get<{ data: unknown[] }>('/api/lot-types')
+      .then(({ data }) => setNeedsSetup(data.data.length === 0))
+      .catch(() => setNeedsSetup(false));
+  }, [user?.role]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -133,6 +146,19 @@ export function DashboardPage() {
         title={t('dashboard.welcome', { name: user.name.split(' ')[0] })}
         subtitle={`${user.residence.name} — ${roleLabels[user.role] ?? user.role}`}
       />
+
+      {needsSetup && (
+        <Link
+          to="/onboarding"
+          className="mb-5 flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50/60 px-5 py-4 transition-colors hover:bg-brand-50"
+        >
+          <div>
+            <p className="text-sm font-semibold text-brand-800">{t('dashboard.setupCardTitle')}</p>
+            <p className="mt-0.5 text-sm text-brand-700/80">{t('dashboard.setupCardSubtitle')}</p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-brand-700">{t('dashboard.setupCardButton')}</span>
+        </Link>
+      )}
 
       <div className="mb-5 flex flex-wrap items-end gap-3">
         <Field label={t('dashboard.fromLabel')} htmlFor="dashboard-from">

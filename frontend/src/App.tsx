@@ -32,6 +32,7 @@ import { RolePermissionsPage } from './pages/RolePermissionsPage';
 import { PaymentsReportPage } from './pages/PaymentsReportPage';
 import { AgReportPage } from './pages/AgReportPage';
 import { GuidePage } from './pages/GuidePage';
+import { OnboardingPage } from './pages/OnboardingPage';
 
 /**
  * The public landing page for guests — but a signed-in user landing on "/"
@@ -70,6 +71,7 @@ function App() {
           <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route element={<ProtectedRoute />}>
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/tresorerie" element={<TreasuryPage />} />

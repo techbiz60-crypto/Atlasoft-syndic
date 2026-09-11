@@ -52,7 +52,7 @@ export function RegisterPage() {
         opening_balance: Math.round(Number(form.opening_balance)),
         locale: i18n.language,
       });
-      navigate('/dashboard');
+      navigate('/onboarding');
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {

@@ -150,6 +150,9 @@ export const fr = {
   },
   dashboard: {
     welcome: 'Bienvenue, {{name}}',
+    setupCardTitle: 'Terminez la configuration de votre résidence',
+    setupCardSubtitle: "Types de lot, appartements, première cotisation — quelques étapes pour être prêt.",
+    setupCardButton: 'Continuer →',
     roles: {
       admin: 'Administrateur',
       tresorier: 'Trésorier',
@@ -700,6 +703,43 @@ export const fr = {
     reopenReasonLabel: 'Raison (visible dans l\'historique de la résidence)',
     reopenConfirmButton: 'Confirmer le déblocage',
     reopenSuccess: 'Clôture de {{name}} débloquée.',
+  },
+  onboarding: {
+    exit: 'Terminer plus tard',
+    continue: 'Continuer',
+    skipStep: 'Passer cette étape',
+    lotTypes: {
+      title: 'Vos types de lot',
+      subtitle: "Un appartement, un magasin, un garage… chacun avec son propre tarif mensuel.",
+      nameLabel: 'Nom',
+      amountLabel: 'Tarif mensuel (DH)',
+    },
+    buildings: {
+      title: 'Vos immeubles',
+      subtitle: "Un immeuble principal a déjà été créé — ajoutez-en d'autres si votre résidence en compte plusieurs.",
+      nameLabel: "Nom de l'immeuble",
+    },
+    lots: {
+      title: 'Vos appartements',
+      subtitle: "Ajoutez-les un par un ou collez une liste depuis Excel — ça se passe sur la page Appartements.",
+      noneYet: "Aucun appartement ajouté pour l'instant.",
+      count: '{{count}} appartement(s) déjà ajouté(s).',
+      openButton: 'Ouvrir la page Appartements',
+    },
+    cotisations: {
+      title: 'Première cotisation',
+      subtitle: 'Générez les appels de fonds du mois en cours pour tous vos appartements.',
+      generateButton: 'Générer les cotisations de ce mois',
+    },
+    team: {
+      title: 'Inviter votre équipe',
+      subtitle: 'Optionnel — vous pourrez toujours en ajouter plus tard depuis Utilisateurs.',
+    },
+    done: {
+      title: "C'est prêt !",
+      subtitle: 'Votre résidence est configurée. Vous pouvez continuer à tout moment depuis les menus.',
+      button: 'Aller au tableau de bord',
+    },
   },
   syndicTransition: {
     deactivatedBanner: 'Ce compte a été désactivé suite à une passation de syndic — accès en lecture seule.',
