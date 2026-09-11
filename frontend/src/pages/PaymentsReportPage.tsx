@@ -10,7 +10,7 @@ import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
 
 const currentYear = new Date().getFullYear();
-const yearOptions = [currentYear - 1, currentYear, currentYear + 1];
+const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
 
 interface FloorGroup {
   floor: string;

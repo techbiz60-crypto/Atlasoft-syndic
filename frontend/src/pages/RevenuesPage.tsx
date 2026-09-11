@@ -14,7 +14,7 @@ import { DataTable } from '../components/ui/DataTable';
 import type { DataTableColumn } from '../components/ui/DataTable';
 
 const now = new Date();
-const yearOptions = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
+const yearOptions = [now.getFullYear() - 2, now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8081';
 

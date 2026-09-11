@@ -12,7 +12,7 @@ import { DataTable } from '../components/ui/DataTable';
 import type { DataTableColumn } from '../components/ui/DataTable';
 
 const currentYear = new Date().getFullYear();
-const yearOptions = [currentYear - 1, currentYear, currentYear + 1];
+const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8081';
 
 export function PaymentsPage() {

@@ -12,7 +12,7 @@ import { TreasuryLedger } from '../components/TreasuryLedger';
 type Tab = 'summary' | 'ledger';
 
 const currentYear = new Date().getFullYear();
-const yearOptions = [currentYear - 1, currentYear, currentYear + 1];
+const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
 
 function sum(amounts: number[]): number {
   return amounts.reduce((total, amount) => total + amount, 0);
