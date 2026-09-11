@@ -25,4 +25,22 @@ class UpdatePasswordRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
+
+    /**
+     * The app has no published lang files, so any rule without an explicit
+     * message here falls back to Laravel showing the raw translation key
+     * (e.g. "validation.min.string") instead of real text.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'current_password.required' => 'Le mot de passe actuel est requis.',
+            'current_password.current_password' => 'Mot de passe actuel incorrect.',
+            'password.required' => 'Le nouveau mot de passe est requis.',
+            'password.min' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation ne correspond pas au nouveau mot de passe.',
+        ];
+    }
 }
