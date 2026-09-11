@@ -284,6 +284,34 @@ class FundCallTest extends TestCase
             ->assertJsonPath('data.0.oldest_unpaid_period', '2026-01-01');
     }
 
+    /**
+     * Reproduces a real report: a residence onboarded in September, whose
+     * lot type's only rate is therefore dated that month, showed just 1
+     * unpaid month for everyone instead of the 9 actually owed since
+     * January — LotType::rateAt() found no rate "in force" for any earlier
+     * month and silently skipped it from the projection.
+     */
+    public function test_unpaid_endpoint_counts_the_full_year_even_when_the_lot_types_only_rate_was_set_this_month(): void
+    {
+        $this->travelTo(Carbon::create(2026, 9, 15));
+
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->postJson('/api/lot-types', ['name' => 'Appartement', 'amount' => 200])->assertCreated();
+        $lotType = LotType::where('name', 'Appartement')->firstOrFail();
+
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        $response = $this->actingAs($admin)->getJson('/api/fund-calls/unpaid');
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.lot_id', $lot->id)
+            ->assertJsonPath('data.0.months_late', 9)
+            ->assertJsonPath('data.0.total_due', 1800);
+    }
+
     public function test_unpaid_endpoint_excludes_lots_whose_year_is_fully_paid(): void
     {
         $this->travelTo(Carbon::create(2026, 9, 15));

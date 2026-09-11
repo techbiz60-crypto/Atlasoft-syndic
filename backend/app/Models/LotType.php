@@ -34,8 +34,20 @@ class LotType extends Model
         return Attribute::get(fn () => $this->rateAt(Carbon::now())?->amount);
     }
 
+    /**
+     * The rate in force on a given date — or, if that date predates every
+     * rate ever recorded for this type (e.g. estimating arrears for months
+     * before a brand-new lot type's first rate was entered), the earliest
+     * one on file. Without this fallback, a lot type created mid-year (its
+     * only rate dated that month) silently has no rate for every earlier
+     * month, so Impayés/AG recap/dashboard dues all undercount arrears
+     * down to just the months since that rate started — the exact
+     * complaint that surfaced this: a residence onboarded in September
+     * showing "1 month owed" instead of 9.
+     */
     public function rateAt(Carbon $date): ?LotTypeRate
     {
-        return $this->rates->first(fn (LotTypeRate $rate) => $rate->effective_date->lte($date));
+        return $this->rates->first(fn (LotTypeRate $rate) => $rate->effective_date->lte($date))
+            ?? $this->rates->last();
     }
 }
