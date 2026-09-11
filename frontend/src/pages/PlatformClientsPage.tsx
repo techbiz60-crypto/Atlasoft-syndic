@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { CheckCircle2, PauseCircle, X } from 'lucide-react';
+import { CheckCircle2, Lock, PauseCircle, Unlock, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
@@ -29,6 +29,10 @@ export function PlatformClientsPage() {
   const [activatingFor, setActivatingFor] = useState<PlatformResidence | null>(null);
   const [activateForm, setActivateForm] = useState({ cycle: 'monthly', plan: '', amount: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [reopeningFor, setReopeningFor] = useState<PlatformResidence | null>(null);
+  const [reopenReason, setReopenReason] = useState('');
+  const [isReopening, setIsReopening] = useState(false);
 
   async function loadResidences() {
     setIsLoading(true);
@@ -95,6 +99,34 @@ export function PlatformClientsPage() {
     }
   }
 
+  function openReopen(residence: PlatformResidence) {
+    setError(null);
+    setSuccess(null);
+    setReopeningFor(residence);
+    setReopenReason('');
+  }
+
+  async function handleReopen(event: FormEvent) {
+    event.preventDefault();
+    if (!reopeningFor) {
+      return;
+    }
+
+    setError(null);
+    setIsReopening(true);
+
+    try {
+      await api.post(`/api/platform/residences/${reopeningFor.residence_id}/reopen-mandate`, { reason: reopenReason });
+      setSuccess(t('platform.reopenSuccess', { name: reopeningFor.residence_name }));
+      setReopeningFor(null);
+      await loadResidences();
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setIsReopening(false);
+    }
+  }
+
   const residenceColumns: DataTableColumn<PlatformResidence>[] = [
     {
       key: 'residence_name',
@@ -108,6 +140,18 @@ export function PlatformClientsPage() {
           <span className="ms-1.5 font-normal text-slate-400">
             ({t('platform.lotsCount', { count: residence.lots_count })})
           </span>
+          {residence.mandate_lock && (
+            <span
+              title={t('platform.mandateLockedTitle', {
+                date: new Date(residence.mandate_lock.closed_at).toLocaleDateString(),
+                admin: residence.mandate_lock.closed_by_name ?? '—',
+              })}
+              className="ms-1.5 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+            >
+              <Lock className="size-3" />
+              {t('platform.mandateLockedBadge')}
+            </span>
+          )}
         </>
       ),
     },
@@ -228,6 +272,36 @@ export function PlatformClientsPage() {
         </form>
       )}
 
+      {reopeningFor && (
+        <form onSubmit={handleReopen} className="mb-6 flex flex-col gap-4 rounded-xl border border-amber-200 bg-amber-50/40 p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-slate-900">
+              {t('platform.reopenTitle', { name: reopeningFor.residence_name })}
+            </p>
+            <button type="button" onClick={() => setReopeningFor(null)} className="text-slate-400 hover:text-slate-600">
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <p className="text-sm text-slate-600">{t('platform.reopenWarning')}</p>
+
+          <Field label={t('platform.reopenReasonLabel')} htmlFor="reopen-reason">
+            <Input
+              id="reopen-reason"
+              value={reopenReason}
+              onChange={(event) => setReopenReason(event.target.value)}
+              minLength={10}
+              required
+            />
+          </Field>
+
+          <Button type="submit" variant="danger" isLoading={isReopening} className="self-start">
+            <Unlock className="size-4" />
+            {t('platform.reopenConfirmButton')}
+          </Button>
+        </form>
+      )}
+
       <DataTable
         columns={residenceColumns}
         data={residences}
@@ -253,6 +327,12 @@ export function PlatformClientsPage() {
               <Button size="sm" variant="secondary" onClick={() => handleDeactivate(residence)}>
                 <PauseCircle className="size-3.5" />
                 {t('platform.deactivateButton')}
+              </Button>
+            )}
+            {residence.mandate_lock && (
+              <Button size="sm" variant="danger" onClick={() => openReopen(residence)}>
+                <Unlock className="size-3.5" />
+                {t('platform.reopenButton')}
               </Button>
             )}
           </>

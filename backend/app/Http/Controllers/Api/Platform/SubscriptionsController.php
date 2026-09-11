@@ -22,6 +22,7 @@ class SubscriptionsController extends Controller
             ->get()
             ->map(function (Residence $residence) {
                 $admin = $residence->users->first();
+                $lock = $residence->currentMandateLock()?->load('closedBy');
 
                 return [
                     'residence_id' => $residence->id,
@@ -31,6 +32,11 @@ class SubscriptionsController extends Controller
                     'admin_email' => $admin?->email,
                     'admin_whatsapp' => $admin?->whatsapp_number,
                     'subscription' => $residence->subscription,
+                    'mandate_lock' => $lock ? [
+                        'id' => $lock->id,
+                        'closed_at' => $lock->closed_at,
+                        'closed_by_name' => $lock->closedBy?->name,
+                    ] : null,
                 ];
             });
 

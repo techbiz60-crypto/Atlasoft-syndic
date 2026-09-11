@@ -72,6 +72,12 @@ export interface SyndicMandateClosure {
   reopened_reason: string | null;
 }
 
+export interface PlatformResidenceMandateLock {
+  id: number;
+  closed_at: string;
+  closed_by_name: string | null;
+}
+
 export interface PlatformResidence {
   residence_id: number;
   residence_name: string;
@@ -80,4 +86,6 @@ export interface PlatformResidence {
   admin_email: string | null;
   admin_whatsapp: string | null;
   subscription: Subscription | null;
+  /** Non-null while a syndic handover freeze is active for this residence. */
+  mandate_lock: PlatformResidenceMandateLock | null;
 }

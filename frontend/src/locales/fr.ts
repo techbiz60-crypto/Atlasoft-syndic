@@ -687,6 +687,15 @@ export const fr = {
     activateSuccess: 'Abonnement de {{name}} activé.',
     confirmDeactivate: 'Désactiver l\'abonnement de {{name}} immédiatement ?',
     deactivateSuccess: 'Abonnement de {{name}} désactivé.',
+    mandateLockedBadge: 'Clôturée',
+    mandateLockedTitle: 'Clôturée le {{date}} par {{admin}}',
+    reopenButton: 'Débloquer',
+    reopenTitle: 'Débloquer la clôture de {{name}}',
+    reopenWarning:
+      "Cette action lève le gel des données financières pour cette résidence, sans réactiver les comptes désactivés à la passation — c'est une intervention exceptionnelle, tracée avec la raison ci-dessous.",
+    reopenReasonLabel: 'Raison (visible dans l\'historique de la résidence)',
+    reopenConfirmButton: 'Confirmer le déblocage',
+    reopenSuccess: 'Clôture de {{name}} débloquée.',
   },
   syndicTransition: {
     deactivatedBanner: 'Ce compte a été désactivé suite à une passation de syndic — accès en lecture seule.',

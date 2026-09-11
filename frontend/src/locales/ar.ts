@@ -694,6 +694,15 @@ export const ar: TranslationResource = {
     activateSuccess: 'تم تفعيل اشتراك {{name}}.',
     confirmDeactivate: 'هل تريدون إيقاف اشتراك {{name}} فورًا؟',
     deactivateSuccess: 'تم إيقاف اشتراك {{name}}.',
+    mandateLockedBadge: 'مُغلقة',
+    mandateLockedTitle: 'أُغلقت في {{date}} بواسطة {{admin}}',
+    reopenButton: 'إلغاء الحظر',
+    reopenTitle: 'إلغاء حظر إغلاق {{name}}',
+    reopenWarning:
+      'هذا الإجراء يرفع تجميد البيانات المالية لهذه الإقامة، دون إعادة تفعيل الحسابات المعطَّلة عند التسليم — إنه تدخل استثنائي، يُسجَّل مع السبب أدناه.',
+    reopenReasonLabel: 'السبب (يظهر في سجل الإقامة)',
+    reopenConfirmButton: 'تأكيد إلغاء الحظر',
+    reopenSuccess: 'تم إلغاء حظر إغلاق {{name}}.',
   },
   syndicTransition: {
     deactivatedBanner: 'تم تعطيل هذا الحساب بعد تسليم مهام النقابة — الاطلاع فقط دون إمكانية التعديل.',
