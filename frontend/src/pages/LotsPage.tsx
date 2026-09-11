@@ -624,12 +624,19 @@ export function LotsPage() {
                           {bulkRowErrors[index] && <p className="mt-1 text-xs text-rose-600">{bulkRowErrors[index]}</p>}
                         </td>
                         <td className="px-3 py-2">
-                          <Input
+                          <Select
                             value={row.floor}
                             onChange={(event) => updateBulkRow(index, 'floor', event.target.value)}
-                            placeholder={t('lots.floorPlaceholder')}
                             className="min-w-20"
-                          />
+                          >
+                            <option value="">{t('lots.floorNotSpecified')}</option>
+                            <option value="RDC">{t('lots.floorGround')}</option>
+                            {Array.from({ length: 20 }, (_, i) => i + 1).map((floor) => (
+                              <option key={floor} value={floor}>
+                                {floor}
+                              </option>
+                            ))}
+                          </Select>
                         </td>
                         <td className="px-3 py-2">
                           <Select
