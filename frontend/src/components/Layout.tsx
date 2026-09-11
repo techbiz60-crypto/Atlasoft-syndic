@@ -106,6 +106,20 @@ export function Layout() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
+          {user.role !== 'coproprietaire' && (
+            <NavLink
+              to="/guide"
+              title={t('nav.guide')}
+              className={({ isActive }) =>
+                `hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors sm:flex ${
+                  isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                }`
+              }
+            >
+              <BookOpen className="size-4.5 shrink-0" />
+              {t('nav.guide')}
+            </NavLink>
+          )}
           <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />
           <UserMenu user={user} roleLabel={roleLabels[user.role] ?? user.role} onLogout={() => logout()} />
         </div>
@@ -157,15 +171,6 @@ export function Layout() {
                 <NavLink to="/permissions" className={navItemClass} title={collapsed ? t('nav.rolePermissions') : undefined}>
                   <ShieldCheck className="size-4.5 shrink-0" />
                   {!collapsed && t('nav.rolePermissions')}
-                </NavLink>
-              </div>
-            )}
-
-            {user.role !== 'coproprietaire' && (
-              <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
-                <NavLink to="/guide" className={navItemClass} title={collapsed ? t('nav.guide') : undefined}>
-                  <BookOpen className="size-4.5 shrink-0" />
-                  {!collapsed && t('nav.guide')}
                 </NavLink>
               </div>
             )}
