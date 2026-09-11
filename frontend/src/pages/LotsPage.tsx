@@ -31,6 +31,9 @@ function splitPastedLine(line: string): string[] {
   if (line.includes('\t')) {
     return line.split('\t');
   }
+  if (line.includes(';')) {
+    return line.split(';');
+  }
   if (line.includes(',')) {
     return line.split(',');
   }
@@ -567,9 +570,28 @@ export function LotsPage() {
                   rows={8}
                   value={bulkRaw}
                   onChange={(event) => setBulkRaw(event.target.value)}
+                  onKeyDown={(event) => {
+                    // A browser textarea moves focus on Tab by default — someone
+                    // typing this by hand instead of pasting from Excel would
+                    // otherwise never be able to produce the tab-separated
+                    // format the parser expects, and see everything land in
+                    // one column.
+                    if (event.key !== 'Tab') {
+                      return;
+                    }
+                    event.preventDefault();
+                    const target = event.currentTarget;
+                    const { selectionStart, selectionEnd, value } = target;
+                    const nextValue = `${value.slice(0, selectionStart)}\t${value.slice(selectionEnd)}`;
+                    setBulkRaw(nextValue);
+                    requestAnimationFrame(() => {
+                      target.selectionStart = target.selectionEnd = selectionStart + 1;
+                    });
+                  }}
                   placeholder={t('lots.bulkPastePlaceholder')}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                 />
+                <p className="mt-1.5 text-xs text-slate-500">{t('lots.bulkPasteHint')}</p>
               </Field>
               <Button type="button" onClick={parseBulkRows} disabled={!bulkRaw.trim()} className="self-start">
                 {t('lots.bulkAnalyzeButton')}

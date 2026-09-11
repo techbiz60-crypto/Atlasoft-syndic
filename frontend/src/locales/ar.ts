@@ -295,6 +295,8 @@ export const ar: TranslationResource = {
     bulkHint: 'مثالي عند بدء عمارة مسكونة بالفعل: الصقوا لائحتكم من Excel بدل إضافة كل شقة على حدة.',
     bulkPasteLabel: 'الصقوا بياناتكم (سطر واحد لكل شقة)',
     bulkPastePlaceholder: 'الرقم\tالمالك\tالهاتف\tالبريد الإلكتروني\nA1\tمحمد العلمي\t0600000000\nA2\tفاطمة الإدريسي',
+    bulkPasteHint:
+      'من Excel: الصقوا أعمدتكم مباشرة. عند الكتابة يدويًا: افصلوا كل قيمة بفاصلة (A1, محمد العلمي, 0600000000) أو اضغطوا على Tab بين كل قيمة.',
     bulkAnalyzeButton: 'تحليل',
     bulkTypeRequired: 'اختاروا نوع الشقة لكل سطر قبل التأكيد.',
     bulkConfirmButton_one: 'تأكيد إضافة {{count}} شقة',

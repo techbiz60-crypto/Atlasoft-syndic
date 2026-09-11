@@ -284,6 +284,8 @@ export const fr = {
     bulkHint: "Idéal pour démarrer avec un immeuble déjà occupé : collez votre liste depuis Excel au lieu d'ajouter chaque lot un par un.",
     bulkPasteLabel: 'Collez vos données (une ligne par appartement)',
     bulkPastePlaceholder: 'Numéro\tPropriétaire\tTéléphone\tEmail\nA1\tMohamed Alami\t0600000000\nA2\tFatima Idrissi',
+    bulkPasteHint:
+      'Depuis Excel : copiez-collez directement vos colonnes. En tapant à la main : séparez chaque valeur par une virgule (A1, Mohamed Alami, 0600000000) ou appuyez sur Tab entre chaque valeur.',
     bulkAnalyzeButton: 'Analyser',
     bulkTypeRequired: 'Choisissez un type de lot pour chaque ligne avant de confirmer.',
     bulkConfirmButton_one: 'Confirmer l\'ajout de {{count}} appartement',
