@@ -12,14 +12,11 @@ import {
   Layers,
   LayoutGrid,
   ListOrdered,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
+  Menu,
   Receipt,
   Settings,
   ShieldCheck,
   TrendingUp,
-  UserCircle,
   UserPlus,
   Users,
   Wallet,
@@ -29,6 +26,7 @@ import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SubscriptionBanner } from './SubscriptionBanner';
 import { DeactivatedAccountBanner } from './DeactivatedAccountBanner';
+import { UserMenu } from './UserMenu';
 
 export function Layout() {
   const { user, logout } = useAuth();
@@ -86,139 +84,104 @@ export function Layout() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside
-        className={`no-print flex shrink-0 flex-col bg-slate-900 px-4 py-6 transition-[width] duration-200 ${collapsed ? 'w-20' : 'w-64'}`}
-      >
-        <div className={`flex items-center gap-2 px-2 ${collapsed ? 'mb-2 justify-center' : 'mb-6 justify-between'}`}>
-          <div className={`flex min-w-0 items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-            <LogoMark className="size-9" />
-            {!collapsed && (
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white">{user.residence.name}</p>
-                <p className="text-xs text-slate-400">{t('nav.residenceApartments', { count: user.residence.lots_count })}</p>
-              </div>
-            )}
-          </div>
-          {!collapsed && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              title={t('nav.collapseSidebar')}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <PanelLeftClose className="size-4.5 rtl:-scale-x-100" />
-            </button>
-          )}
-        </div>
-
-        {collapsed && (
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <header className="no-print flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
+        <div className="flex min-w-0 items-center gap-3">
           <button
+            type="button"
             onClick={() => setCollapsed(!collapsed)}
-            title={t('nav.expandSidebar')}
-            className="mb-6 flex w-full items-center justify-center rounded-lg py-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+            title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100"
           >
-            <PanelLeftOpen className="size-4.5 rtl:-scale-x-100" />
+            <Menu className="size-5" />
           </button>
-        )}
 
-        <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
-          <div className="flex flex-col gap-1">
-            <NavLink to={dashboardItem.to} end={dashboardItem.end} className={navItemClass} title={collapsed ? dashboardItem.label : undefined}>
-              <DashboardIcon className="size-4.5 shrink-0" />
-              {!collapsed && dashboardItem.label}
-            </NavLink>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <LogoMark className="size-8 shrink-0" />
+            <div className="hidden min-w-0 sm:block">
+              <p className="truncate text-sm font-semibold text-slate-900">{user.residence.name}</p>
+              <p className="text-xs text-slate-500">{t('nav.residenceApartments', { count: user.residence.lots_count })}</p>
+            </div>
           </div>
+        </div>
 
-          {navGroups.map((group) => (
-            <div key={group.title} className="flex flex-col gap-1">
-              {!collapsed && <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{group.title}</p>}
-              {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
-              {group.items.map(({ to, end, icon: Icon, label }) => (
-                <NavLink key={to} to={to} end={end} className={navItemClass} title={collapsed ? label : undefined}>
-                  <Icon className="size-4.5 shrink-0" />
-                  {!collapsed && label}
-                </NavLink>
-              ))}
-            </div>
-          ))}
+        <div className="flex shrink-0 items-center gap-3">
+          <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />
+          <UserMenu user={user} roleLabel={roleLabels[user.role] ?? user.role} onLogout={() => logout()} />
+        </div>
+      </header>
 
-          {user.role === 'admin' && (
+      <div className="flex flex-1">
+        <aside
+          className={`no-print flex shrink-0 flex-col bg-slate-900 px-3 py-5 transition-[width] duration-200 ${collapsed ? 'w-20' : 'w-64'}`}
+        >
+          <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
             <div className="flex flex-col gap-1">
-              {!collapsed && (
-                <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('nav.sectionAdministration')}</p>
-              )}
-              {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
-              <NavLink to="/abonnement" className={navItemClass} title={collapsed ? t('nav.subscription') : undefined}>
-                <CreditCard className="size-4.5 shrink-0" />
-                {!collapsed && t('nav.subscription')}
-              </NavLink>
-              <NavLink to="/residence" className={navItemClass} title={collapsed ? t('nav.residenceSettings') : undefined}>
-                <Settings className="size-4.5 shrink-0" />
-                {!collapsed && t('nav.residenceSettings')}
-              </NavLink>
-              <NavLink to="/utilisateurs" className={navItemClass} title={collapsed ? t('nav.users') : undefined}>
-                <UserPlus className="size-4.5 shrink-0" />
-                {!collapsed && t('nav.users')}
-              </NavLink>
-              <NavLink to="/permissions" className={navItemClass} title={collapsed ? t('nav.rolePermissions') : undefined}>
-                <ShieldCheck className="size-4.5 shrink-0" />
-                {!collapsed && t('nav.rolePermissions')}
+              <NavLink to={dashboardItem.to} end={dashboardItem.end} className={navItemClass} title={collapsed ? dashboardItem.label : undefined}>
+                <DashboardIcon className="size-4.5 shrink-0" />
+                {!collapsed && dashboardItem.label}
               </NavLink>
             </div>
-          )}
-        </nav>
 
-        <div className="mt-6 border-t border-white/10 pt-4">
-          {user.role !== 'coproprietaire' && (
-            <NavLink
-              to="/guide"
-              className={navItemClass}
-              title={collapsed ? t('nav.guide') : undefined}
-            >
-              <BookOpen className="size-4.5 shrink-0" />
-              {!collapsed && t('nav.guide')}
-            </NavLink>
-          )}
-          <NavLink
-            to="/mon-compte"
-            title={collapsed ? t('nav.myAccount') : undefined}
-            className={({ isActive }) =>
-              `mb-3 flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-white/5 ${collapsed ? 'justify-center' : ''} ${isActive ? 'bg-white/5' : ''}`
-            }
-          >
-            <UserCircle className="size-4.5 shrink-0 text-slate-400" />
-            {!collapsed && (
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-white">{user.name}</p>
-                <p className="text-xs text-slate-400">{roleLabels[user.role] ?? user.role}</p>
+            {navGroups.map((group) => (
+              <div key={group.title} className="flex flex-col gap-1">
+                {!collapsed && <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{group.title}</p>}
+                {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
+                {group.items.map(({ to, end, icon: Icon, label }) => (
+                  <NavLink key={to} to={to} end={end} className={navItemClass} title={collapsed ? label : undefined}>
+                    <Icon className="size-4.5 shrink-0" />
+                    {!collapsed && label}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+
+            {user.role === 'admin' && (
+              <div className="flex flex-col gap-1">
+                {!collapsed && (
+                  <p className="px-3 pb-1 text-xs font-semibold tracking-wide text-slate-500 uppercase">{t('nav.sectionAdministration')}</p>
+                )}
+                {collapsed && <div className="mx-2 my-1 border-t border-white/10" />}
+                <NavLink to="/abonnement" className={navItemClass} title={collapsed ? t('nav.subscription') : undefined}>
+                  <CreditCard className="size-4.5 shrink-0" />
+                  {!collapsed && t('nav.subscription')}
+                </NavLink>
+                <NavLink to="/residence" className={navItemClass} title={collapsed ? t('nav.residenceSettings') : undefined}>
+                  <Settings className="size-4.5 shrink-0" />
+                  {!collapsed && t('nav.residenceSettings')}
+                </NavLink>
+                <NavLink to="/utilisateurs" className={navItemClass} title={collapsed ? t('nav.users') : undefined}>
+                  <UserPlus className="size-4.5 shrink-0" />
+                  {!collapsed && t('nav.users')}
+                </NavLink>
+                <NavLink to="/permissions" className={navItemClass} title={collapsed ? t('nav.rolePermissions') : undefined}>
+                  <ShieldCheck className="size-4.5 shrink-0" />
+                  {!collapsed && t('nav.rolePermissions')}
+                </NavLink>
               </div>
             )}
-          </NavLink>
-          {!collapsed && (
-            <div className="mb-3 px-2">
-              <LanguageSwitcher variant="dark" />
-            </div>
-          )}
-          <button
-            onClick={() => logout()}
-            title={collapsed ? t('nav.logout') : undefined}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white ${collapsed ? 'justify-center' : ''}`}
-          >
-            <LogOut className="size-4.5 shrink-0" />
-            {!collapsed && t('nav.logout')}
-          </button>
-        </div>
-      </aside>
 
-      <main className="flex flex-1 flex-col overflow-y-auto print:overflow-visible">
-        <div className="no-print">
-          <DeactivatedAccountBanner />
-          <SubscriptionBanner />
-        </div>
-        <div className="mx-auto w-full max-w-[1600px] px-8 py-8 lg:px-12 print:max-w-none print:p-0">
-          <Outlet />
-        </div>
-      </main>
+            {user.role !== 'coproprietaire' && (
+              <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
+                <NavLink to="/guide" className={navItemClass} title={collapsed ? t('nav.guide') : undefined}>
+                  <BookOpen className="size-4.5 shrink-0" />
+                  {!collapsed && t('nav.guide')}
+                </NavLink>
+              </div>
+            )}
+          </nav>
+        </aside>
+
+        <main className="flex flex-1 flex-col overflow-y-auto print:overflow-visible">
+          <div className="no-print">
+            <DeactivatedAccountBanner />
+            <SubscriptionBanner />
+          </div>
+          <div className="mx-auto w-full max-w-[1600px] px-8 py-8 lg:px-12 print:max-w-none print:p-0">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

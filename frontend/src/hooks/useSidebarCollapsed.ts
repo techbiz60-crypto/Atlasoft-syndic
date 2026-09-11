@@ -5,9 +5,9 @@ const STORAGE_KEY = 'atlasoft-sidebar-collapsed';
 export function useSidebarCollapsed() {
   const [collapsed, setCollapsed] = useState(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY) === '1';
+      return localStorage.getItem(STORAGE_KEY) !== '0';
     } catch {
-      return false;
+      return true;
     }
   });
 
