@@ -8,6 +8,8 @@ use App\Models\LotType;
 use App\Models\Residence;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class LotTypeTest extends TestCase
@@ -30,6 +32,34 @@ class LotTypeTest extends TestCase
 
         $this->assertDatabaseHas('lot_types', ['name' => 'Studio', 'residence_id' => $residence->id]);
         $this->assertDatabaseHas('lot_type_rates', ['amount' => 200]);
+    }
+
+    /**
+     * The rate's effective_date must default to the start of the current
+     * month, not today — otherwise generating this month's cotisations
+     * right after creating the lot type (e.g. mid-month, as in the
+     * onboarding wizard) finds no rate "in force" and silently skips every
+     * lot of that type until next month.
+     */
+    public function test_a_lot_types_initial_rate_applies_to_the_current_months_cotisations_even_mid_month(): void
+    {
+        Carbon::setTestNow(Carbon::create(now()->year, now()->month, 15));
+
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->postJson('/api/lot-types', ['name' => 'Studio', 'amount' => 300])->assertCreated();
+        $lotType = LotType::where('name', 'Studio')->firstOrFail();
+
+        Lot::factory()->for($residence)->create(['building_id' => $building->id, 'lot_type_id' => $lotType->id]);
+
+        Artisan::call('fund-calls:generate', ['--residence' => $residence->id]);
+
+        $this->assertStringContainsString('1 appel(s)', Artisan::output());
+        $this->assertDatabaseHas('fund_calls', ['residence_id' => $residence->id, 'amount' => 300]);
+
+        Carbon::setTestNow();
     }
 
     public function test_conseil_member_cannot_create_a_lot_type(): void

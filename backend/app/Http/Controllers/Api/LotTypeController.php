@@ -24,7 +24,12 @@ class LotTypeController extends Controller
             $lotType->rates()->create([
                 'residence_id' => $lotType->residence_id,
                 'amount' => $request->integer('amount'),
-                'effective_date' => $request->date('effective_date') ?? now(),
+                // Defaults to the start of the current month, not today —
+                // fund-calls:generate compares a rate's effective_date
+                // against the period's first day, so a lot type created on,
+                // say, the 15th would otherwise have no rate "in force" for
+                // that month's cotisation until next month.
+                'effective_date' => $request->date('effective_date') ?? now()->startOfMonth(),
             ]);
 
             return $lotType;
