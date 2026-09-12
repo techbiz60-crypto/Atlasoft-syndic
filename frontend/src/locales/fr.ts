@@ -710,6 +710,10 @@ export const fr = {
     reopenConfirmButton: 'Confirmer le déblocage',
     reopenSuccess: 'Clôture de {{name}} débloquée.',
   },
+  agReminder: {
+    message: "L'exercice {{year}} est terminé depuis le {{date}} — pensez à saisir la date de l'assemblée générale.",
+    action: 'Saisir la date',
+  },
   onboarding: {
     exit: 'Terminer plus tard',
     continue: 'Continuer',

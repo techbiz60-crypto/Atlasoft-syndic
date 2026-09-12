@@ -55,13 +55,17 @@ class GeneralAssemblyTest extends TestCase
         $this->assertDatabaseMissing('general_assemblies', ['exercise_year' => 2025]);
     }
 
-    public function test_conseil_member_cannot_manage_ag_dates(): void
+    public function test_conseil_member_cannot_manage_ag_dates_but_can_read_them(): void
     {
         $residence = Residence::factory()->create();
         $member = User::factory()->for($residence)->conseil()->create();
 
         $this->actingAs($member)->putJson('/api/general-assemblies/2026', ['held_on' => '2027-01-31'])->assertForbidden();
-        $this->actingAs($member)->getJson('/api/general-assemblies')->assertForbidden();
+        $this->actingAs($member)->deleteJson('/api/general-assemblies/2026')->assertForbidden();
+        // Read access is intentionally open to every role — the missing-AG
+        // reminder banner (admin/trésorier) relies on it, and the dates
+        // themselves aren't sensitive.
+        $this->actingAs($member)->getJson('/api/general-assemblies')->assertOk();
     }
 
     public function test_ag_dates_never_leak_across_residences(): void

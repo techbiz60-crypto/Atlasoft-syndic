@@ -75,11 +75,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reports/ag-recap', [AgRecapController::class, 'index']);
         Route::get('/subscription', [SubscriptionController::class, 'show']);
         Route::get('/subscription/invoices', [SubscriptionController::class, 'invoices']);
+        // Readable by every role — the missing-AG-date reminder banner
+        // (admin and trésorier) needs it, and the dates themselves aren't
+        // sensitive. Only creating/removing one stays admin-only below.
+        Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
 
         Route::middleware(['subscription.active', 'active'])->group(function () {
             Route::middleware(['admin'])->group(function () {
                 Route::put('/residence', [ResidenceController::class, 'update']);
-                Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
                 Route::put('/general-assemblies/{year}', [GeneralAssemblyController::class, 'update']);
                 Route::delete('/general-assemblies/{year}', [GeneralAssemblyController::class, 'destroy']);
                 Route::get('/role-permissions', [RolePermissionController::class, 'index']);

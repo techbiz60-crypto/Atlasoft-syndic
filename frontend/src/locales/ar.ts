@@ -717,6 +717,10 @@ export const ar: TranslationResource = {
     reopenConfirmButton: 'تأكيد إلغاء الحظر',
     reopenSuccess: 'تم إلغاء حظر إغلاق {{name}}.',
   },
+  agReminder: {
+    message: 'انتهت السنة المحاسبية {{year}} منذ {{date}} — لا تنسوا إدخال تاريخ الجمعية العامة.',
+    action: 'إدخال التاريخ',
+  },
   onboarding: {
     exit: 'الإنهاء لاحقًا',
     continue: 'متابعة',

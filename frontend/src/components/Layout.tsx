@@ -26,6 +26,7 @@ import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SubscriptionBanner } from './SubscriptionBanner';
 import { DeactivatedAccountBanner } from './DeactivatedAccountBanner';
+import { MissingAgDateBanner } from './MissingAgDateBanner';
 import { UserMenu } from './UserMenu';
 
 export function Layout() {
@@ -180,6 +181,7 @@ export function Layout() {
         <main className="flex flex-1 flex-col overflow-y-auto print:overflow-visible">
           <div className="no-print">
             <DeactivatedAccountBanner />
+            <MissingAgDateBanner />
             <SubscriptionBanner />
           </div>
           <div className="mx-auto w-full max-w-[1600px] px-8 py-8 lg:px-12 print:max-w-none print:p-0">
