@@ -178,6 +178,14 @@ function GeneralAssembliesSection() {
       const { data } = await api.get<{ data: GeneralAssembly[] }>('/api/general-assemblies');
       setAssemblies(data.data);
       setDrafts(Object.fromEntries(data.data.map((assembly) => [assembly.exercise_year, assembly.held_on])));
+
+      // Suggests the most recent past exercise that has no AG date yet —
+      // the "Année" field otherwise only shows a placeholder ("2026") that
+      // looks filled in but isn't, so submitting without actually typing a
+      // year fails silently with no visible error.
+      const previousYear = new Date().getFullYear() - 1;
+      const hasPreviousYear = data.data.some((assembly) => assembly.exercise_year === previousYear && assembly.held_on);
+      setNewYear((current) => current || (hasPreviousYear ? '' : String(previousYear)));
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -216,10 +224,14 @@ function GeneralAssembliesSection() {
 
   function handleAddYear(event: FormEvent) {
     event.preventDefault();
+    setError(null);
     const year = Number(newYear);
+
     if (!year || !newDate) {
+      setError(t('generalAssemblies.missingFields'));
       return;
     }
+
     saveYear(year, newDate).then(() => {
       setNewYear('');
       setNewDate('');

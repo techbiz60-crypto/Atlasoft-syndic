@@ -521,6 +521,7 @@ export const fr = {
     clearButton: 'Effacer',
     savedMessage: 'Date enregistrée.',
     clearedMessage: 'Date supprimée — cet exercice redevient ouvert au 1er janvier suivant.',
+    missingFields: "Renseignez l'année de l'exercice et la date de l'AG avant d'ajouter.",
   },
   users: {
     title: 'Utilisateurs',

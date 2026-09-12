@@ -528,6 +528,7 @@ export const ar: TranslationResource = {
     clearButton: 'مسح',
     savedMessage: 'تم حفظ التاريخ.',
     clearedMessage: 'تم حذف التاريخ — أصبحت هذه السنة المالية مفتوحة إلى غاية فاتح يناير الموالي.',
+    missingFields: 'أدخلوا السنة المالية وتاريخ الجمعية العامة قبل الإضافة.',
   },
   users: {
     title: 'المستخدمون',
