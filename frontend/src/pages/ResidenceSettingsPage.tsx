@@ -10,6 +10,7 @@ import { PageHeader } from '../components/PageHeader';
 import { Field, Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert, SuccessAlert } from '../components/ui/Alert';
+import { GENERAL_ASSEMBLIES_UPDATED_EVENT } from '../components/MissingAgDateBanner';
 
 export function ResidenceSettingsPage() {
   const { t } = useTranslation();
@@ -206,6 +207,7 @@ function GeneralAssembliesSection() {
       await api.put(`/api/general-assemblies/${year}`, { held_on: heldOn });
       setFeedback('saved');
       await loadAssemblies();
+      window.dispatchEvent(new Event(GENERAL_ASSEMBLIES_UPDATED_EVENT));
     } catch (err) {
       setError(extractErrorMessage(err));
     }
@@ -217,6 +219,7 @@ function GeneralAssembliesSection() {
       await api.delete(`/api/general-assemblies/${year}`);
       setFeedback('cleared');
       await loadAssemblies();
+      window.dispatchEvent(new Event(GENERAL_ASSEMBLIES_UPDATED_EVENT));
     } catch (err) {
       setError(extractErrorMessage(err));
     }

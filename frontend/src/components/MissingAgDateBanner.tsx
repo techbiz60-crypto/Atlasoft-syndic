@@ -10,6 +10,9 @@ interface GeneralAssembly {
   held_on: string | null;
 }
 
+/** Dispatched by ResidenceSettingsPage whenever an AG date is saved or cleared, so this banner updates instantly instead of waiting for the next page load. */
+export const GENERAL_ASSEMBLIES_UPDATED_EVENT = 'atlasoft:general-assemblies-updated';
+
 /** Mirrors Residence::fiscalYearStartsOn() on the backend. */
 function fiscalYearStartsOn(year: number, month: number, day: number): Date {
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -28,10 +31,16 @@ export function MissingAgDateBanner() {
       return;
     }
 
-    api
-      .get<{ data: GeneralAssembly[] }>('/api/general-assemblies')
-      .then(({ data }) => setAssemblies(data.data))
-      .catch(() => setAssemblies(null));
+    function load() {
+      api
+        .get<{ data: GeneralAssembly[] }>('/api/general-assemblies')
+        .then(({ data }) => setAssemblies(data.data))
+        .catch(() => setAssemblies(null));
+    }
+
+    load();
+    window.addEventListener(GENERAL_ASSEMBLIES_UPDATED_EVENT, load);
+    return () => window.removeEventListener(GENERAL_ASSEMBLIES_UPDATED_EVENT, load);
   }, [canSee]);
 
   if (!canSee || !assemblies || !user?.residence) {
