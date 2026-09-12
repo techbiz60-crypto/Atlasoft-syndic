@@ -56,14 +56,21 @@ function groupByFloor(
   return groups;
 }
 
+/** "2026-06" -> "Juin 2026" — a custom fiscal year means the 12 columns aren't necessarily January-December. */
+function formatMonthPeriod(period: string, monthNames: string[]): string {
+  const [year, month] = period.split('-');
+  return `${monthNames[Number(month) - 1]} ${year}`;
+}
+
 export function PaymentsReportPage() {
   const { t } = useTranslation();
-  const monthLabels = t('common.monthsFull', { returnObjects: true }) as string[];
+  const rawMonthNames = t('common.monthsFull', { returnObjects: true }) as string[];
 
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [buildingId, setBuildingId] = useState('');
   const [year, setYear] = useState(currentYear);
   const [report, setReport] = useState<PaymentsReport | null>(null);
+  const monthLabels = report ? report.month_periods.map((period) => formatMonthPeriod(period, rawMonthNames)) : [];
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

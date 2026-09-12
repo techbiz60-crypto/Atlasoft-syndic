@@ -108,4 +108,30 @@ class TreasuryReportTest extends TestCase
 
         $response->assertOk()->assertJsonPath('expenses_by_month.2', 0);
     }
+
+    public function test_a_custom_fiscal_year_shifts_which_month_is_column_zero(): void
+    {
+        $residence = Residence::factory()->create(['fiscal_year_start_month' => 6, 'fiscal_year_start_day' => 1]);
+        $admin = User::factory()->for($residence)->create();
+        $category = RevenueCategory::factory()->for($residence)->create();
+
+        Revenue::factory()->for($residence)->create([
+            'revenue_category_id' => $category->id,
+            'received_at' => '2026-06-10',
+            'amount' => 300,
+        ]);
+
+        // Predates this exercise (starts June 2026) — must not appear.
+        Revenue::factory()->for($residence)->create([
+            'revenue_category_id' => $category->id,
+            'received_at' => '2026-05-20',
+            'amount' => 999,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/treasury-report?year=2026');
+
+        $response->assertOk()
+            ->assertJsonPath('month_periods.0', '2026-06')
+            ->assertJsonPath('income_by_month.0', 300);
+    }
 }

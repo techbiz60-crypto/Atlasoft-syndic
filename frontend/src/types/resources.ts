@@ -188,6 +188,8 @@ export interface TreasuryCategoryLine {
 
 export interface TreasuryReport {
   year: number;
+  /** The 12 columns' actual "YYYY-MM", in order — not necessarily January-December when the residence has a custom fiscal year. */
+  month_periods: string[];
   opening_balance: number;
   cotisations: number[];
   revenue_categories: TreasuryCategoryLine[];
@@ -294,6 +296,8 @@ export interface AgRecap {
 export interface AgReport {
   year: number;
   residence_name: string;
+  /** The 12 columns' actual "YYYY-MM", in order — not necessarily January-December when the residence has a custom fiscal year. */
+  month_periods: string[];
   /** Grouped by the month each payment covers, not the month it was received. */
   cotisations: number[];
   /** Any debt from a prior exercise settled this year — the pre-platform opening balance, or an ordinary cotisation paid late. */
@@ -325,6 +329,8 @@ export interface PaymentsReportRow {
 
 export interface PaymentsReport {
   year: number;
+  /** The 12 columns' actual "YYYY-MM", in order — not necessarily January-December when the residence has a custom fiscal year. */
+  month_periods: string[];
   building_name: string | null;
   rows: PaymentsReportRow[];
 }

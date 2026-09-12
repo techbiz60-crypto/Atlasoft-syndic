@@ -510,6 +510,10 @@ export const ar: TranslationResource = {
     bankRibLabel: 'RIB الإقامة',
     bankRibPlaceholder: '007 780 0001234567890123 45',
     openingBalanceLabel: 'الرصيد الافتتاحي بالصندوق (قبل استعمال التطبيق)',
+    fiscalYearMonthLabel: 'شهر بداية السنة المحاسبية',
+    fiscalYearDayLabel: 'يوم البداية',
+    fiscalYearHint:
+      'افتراضيًا، تمتد السنة المحاسبية من 1 يناير إلى 31 دجنبر. يسمح المرسوم 2.23.700 للجمعية العامة بتحديد تاريخ بداية آخر — تدوم السنة حينها 12 شهرًا ابتداءً من هذا التاريخ.',
     saveButton: 'حفظ',
     savedMessage: 'تم حفظ التعديلات.',
   },

@@ -14,18 +14,20 @@ class ReportController extends Controller
 {
     /**
      * A printable, per-building ledger: for each lot, what's still owed
-     * from before this year (and how much of that was paid back during
-     * it), plus which months of this year were paid in full — mirrors the
-     * Excel sheet syndics were already using by hand.
+     * from before this exercise (and how much of that was paid back during
+     * it), plus which months of this exercise were paid in full — mirrors
+     * the Excel sheet syndics were already using by hand.
      */
     public function payments(Request $request): JsonResponse
     {
         $year = $request->integer('year') ?: Carbon::now()->year;
         $buildingId = $request->integer('building_id') ?: null;
-        $yearStart = Carbon::create($year, 1, 1);
+        $residence = $request->user()->residence;
+        $yearStart = $residence->fiscalYearStartsOn($year);
+        $yearEnd = $residence->fiscalYearEndsOn($year);
 
-        $lots = Lot::with(['openingBalance.payments', 'fundCalls' => function ($query) use ($year) {
-            $query->whereYear('period', $year)->where('is_opening_balance', false)->with('payments');
+        $lots = Lot::with(['openingBalance.payments', 'fundCalls' => function ($query) use ($yearStart, $yearEnd) {
+            $query->whereDate('period', '>=', $yearStart)->whereDate('period', '<', $yearEnd)->where('is_opening_balance', false)->with('payments');
         }])
             ->when($buildingId, fn ($query) => $query->where('building_id', $buildingId))
             // Lot number always wins — a purely numeric "10" must sort after
@@ -33,11 +35,11 @@ class ReportController extends Controller
             ->orderByRaw('LENGTH(number), number')
             ->get();
 
-        $rows = $lots->map(function (Lot $lot) use ($year, $yearStart) {
-            $byMonth = $lot->fundCalls->keyBy(fn (FundCall $call) => $call->period->month);
+        $rows = $lots->map(function (Lot $lot) use ($yearStart, $yearEnd) {
+            $byMonth = $lot->fundCalls->keyBy(fn (FundCall $call) => ($call->period->year - $yearStart->year) * 12 + ($call->period->month - $yearStart->month));
 
-            $months = collect(range(1, 12))->map(function (int $month) use ($byMonth) {
-                $call = $byMonth->get($month);
+            $months = collect(range(0, 11))->map(function (int $monthIndex) use ($byMonth) {
+                $call = $byMonth->get($monthIndex);
 
                 return $call && $call->status === 'paid' ? $call->amount : null;
             });
@@ -50,7 +52,7 @@ class ReportController extends Controller
                     ->filter(fn ($payment) => $payment->paid_at->lt($yearStart))
                     ->sum('amount');
                 $paidDuringYear = $lot->openingBalance->payments
-                    ->filter(fn ($payment) => $payment->paid_at->year === $year)
+                    ->filter(fn ($payment) => $payment->paid_at->gte($yearStart) && $payment->paid_at->lt($yearEnd))
                     ->sum('amount');
 
                 $remaining = $lot->openingBalance->amount - $paidBeforeYear;
@@ -70,8 +72,17 @@ class ReportController extends Controller
             ];
         });
 
+        // The 12 columns no longer necessarily line up with January-December
+        // — a custom fiscal year shifts them — so the frontend renders each
+        // one from its actual "Y-m" instead of a fixed month-name list.
+        $monthPeriods = [];
+        for ($i = 0; $i < 12; $i++) {
+            $monthPeriods[] = $yearStart->copy()->addMonthsNoOverflow($i)->format('Y-m');
+        }
+
         return response()->json([
             'year' => $year,
+            'month_periods' => $monthPeriods,
             'building_name' => $buildingId ? Building::find($buildingId)?->name : null,
             'rows' => $rows,
         ]);

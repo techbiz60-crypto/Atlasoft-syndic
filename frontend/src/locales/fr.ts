@@ -503,6 +503,10 @@ export const fr = {
     bankRibLabel: 'RIB de la résidence',
     bankRibPlaceholder: '007 780 0001234567890123 45',
     openingBalanceLabel: "Solde initial en caisse (avant l'utilisation de l'application)",
+    fiscalYearMonthLabel: "Mois de début de l'exercice comptable",
+    fiscalYearDayLabel: 'Jour de début',
+    fiscalYearHint:
+      "Par défaut, l'exercice va du 1er janvier au 31 décembre. Le décret 2.23.700 permet à l'assemblée générale de fixer une autre date de début — l'exercice dure alors 12 mois à partir de cette date.",
     saveButton: 'Enregistrer',
     savedMessage: 'Modifications enregistrées.',
   },

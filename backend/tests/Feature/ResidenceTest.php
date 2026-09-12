@@ -23,6 +23,21 @@ class ResidenceTest extends TestCase
         $response->assertOk()->assertJsonPath('data.bank_rib', '007780000123456789012345');
     }
 
+    public function test_admin_can_set_a_custom_fiscal_year_start(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+
+        $response = $this->actingAs($admin)->putJson('/api/residence', [
+            'fiscal_year_start_month' => 6,
+            'fiscal_year_start_day' => 1,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.fiscal_year_start_month', 6)
+            ->assertJsonPath('data.fiscal_year_start_day', 1);
+    }
+
     public function test_conseil_member_cannot_update_residence_settings(): void
     {
         $residence = Residence::factory()->create();

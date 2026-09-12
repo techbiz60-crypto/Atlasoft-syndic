@@ -37,6 +37,10 @@ export interface Residence {
   lots_count: number;
   bank_rib: string | null;
   opening_balance: number;
+  /** 1-12 — month the accounting exercise starts (Décret 2.23.700 lets the AG fix it; defaults to January). */
+  fiscal_year_start_month: number;
+  /** 1-31 — day of that month the exercise starts. */
+  fiscal_year_start_day: number;
   /** ISO datetime of the last syndic handover, or null if none happened — any
    * financial record created before it is frozen, for every role. */
   mandate_lock_boundary: string | null;

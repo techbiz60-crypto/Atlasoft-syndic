@@ -27,7 +27,8 @@ class AgRecapController extends Controller
     {
         $year = $request->integer('year') ?: Carbon::now()->year;
         $residence = $request->user()->residence;
-        $startOfYear = Carbon::create($year, 1, 1)->startOfDay();
+        $startOfYear = $residence->fiscalYearStartsOn($year);
+        $endOfYear = $residence->fiscalYearEndsOn($year);
         // Same exercise boundary as the AG report — the AG date that closed
         // the previous exercise, or January 1st by default — so a building's
         // recap here can never disagree with the totals on that screen.
@@ -40,7 +41,8 @@ class AgRecapController extends Controller
         // memory — the alternative is a handful of queries per lot.
         $paidForYearByLot = Payment::whereHas(
             'fundCall',
-            fn ($query) => $query->where('is_opening_balance', false)->whereYear('period', $year)
+            fn ($query) => $query->where('is_opening_balance', false)
+                ->whereDate('period', '>=', $startOfYear)->whereDate('period', '<', $endOfYear)
         )
             ->whereDate('paid_at', '<', $cutoffEnd)
             ->with('fundCall:id,lot_id')
@@ -62,7 +64,7 @@ class AgRecapController extends Controller
             ->map(fn ($payments) => $payments->sum('amount'));
 
         $buildings = Building::orderBy('name')->get()
-            ->map(function (Building $building) use ($lots, $paidForYearByLot, $paidForArrearsByLot, $year) {
+            ->map(function (Building $building) use ($lots, $paidForYearByLot, $paidForArrearsByLot, $startOfYear) {
                 $buildingLots = $lots->where('building_id', $building->id);
 
                 $duesTotal = 0;
@@ -71,11 +73,11 @@ class AgRecapController extends Controller
                 $payingLotsCount = 0;
 
                 foreach ($buildingLots as $lot) {
-                    // What the lot owed for the year, month by month, so a
-                    // mid-year rate change is reflected rather than assuming
-                    // twelve times today's amount.
-                    for ($month = 1; $month <= 12; $month++) {
-                        $duesTotal += $lot->lotType->rateAt(Carbon::create($year, $month, 1))?->amount ?? 0;
+                    // What the lot owed for the exercise, month by month, so
+                    // a mid-year rate change is reflected rather than
+                    // assuming twelve times today's amount.
+                    for ($i = 0; $i < 12; $i++) {
+                        $duesTotal += $lot->lotType->rateAt($startOfYear->copy()->addMonthsNoOverflow($i))?->amount ?? 0;
                     }
 
                     $paid = $paidForYearByLot->get($lot->id, 0);

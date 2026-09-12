@@ -190,6 +190,47 @@ class AgRecapTest extends TestCase
             ->assertJsonPath('total.collection_rate', 0.75);
     }
 
+    public function test_a_custom_fiscal_year_shifts_the_exercises_window(): void
+    {
+        $residence = Residence::factory()->create(['fiscal_year_start_month' => 6, 'fiscal_year_start_day' => 1]);
+        $admin = User::factory()->for($residence)->create();
+        $lotType = $this->lotTypeBilling($residence, 200);
+        $building = Building::factory()->for($residence)->create();
+        $lot = Lot::factory()->for($residence)->for($building)->for($lotType)->create();
+
+        // Exercise "2026" runs June 2026 -> May 2027: pay June 2026's dues.
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-06-01',
+        ]);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-06-10',
+            'method' => 'especes',
+        ]);
+
+        // May 2026 predates this exercise — must not count towards it.
+        $priorFundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-05-01',
+        ]);
+        $priorFundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-05-10',
+            'method' => 'especes',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/reports/ag-recap?year=2026');
+
+        // Dues total = 200 x 12 months (June 2026 -> May 2027), and only the
+        // June payment counts as collected for this exercise.
+        $response->assertOk()
+            ->assertJsonPath('total.dues_total', 2400)
+            ->assertJsonPath('total.collected_for_year', 200);
+    }
+
     public function test_recap_only_covers_the_admins_own_residence(): void
     {
         $residenceA = Residence::factory()->create();

@@ -7,7 +7,7 @@ import { extractErrorMessage } from '../context/AuthContext';
 import type { Residence, SyndicMandateClosure } from '../types/auth';
 import type { GeneralAssembly } from '../types/resources';
 import { PageHeader } from '../components/PageHeader';
-import { Field, Input } from '../components/ui/Input';
+import { Field, Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert, SuccessAlert } from '../components/ui/Alert';
 
@@ -18,7 +18,15 @@ export function ResidenceSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const [form, setForm] = useState({ name: '', address: '', lots_count: '', bank_rib: '', opening_balance: '' });
+  const [form, setForm] = useState({
+    name: '',
+    address: '',
+    lots_count: '',
+    bank_rib: '',
+    opening_balance: '',
+    fiscal_year_start_month: '1',
+    fiscal_year_start_day: '1',
+  });
 
   useEffect(() => {
     api
@@ -30,6 +38,8 @@ export function ResidenceSettingsPage() {
           lots_count: String(data.data.lots_count),
           bank_rib: data.data.bank_rib ?? '',
           opening_balance: String(data.data.opening_balance ?? 0),
+          fiscal_year_start_month: String(data.data.fiscal_year_start_month ?? 1),
+          fiscal_year_start_day: String(data.data.fiscal_year_start_day ?? 1),
         });
       })
       .catch((err) => setError(extractErrorMessage(err)))
@@ -37,7 +47,7 @@ export function ResidenceSettingsPage() {
   }, []);
 
   function updateField(field: keyof typeof form) {
-    return (event: React.ChangeEvent<HTMLInputElement>) => {
+    return (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setForm((previous) => ({ ...previous, [field]: event.target.value }));
     };
   }
@@ -53,6 +63,8 @@ export function ResidenceSettingsPage() {
         ...form,
         lots_count: Number(form.lots_count),
         opening_balance: Math.round(Number(form.opening_balance)),
+        fiscal_year_start_month: Number(form.fiscal_year_start_month),
+        fiscal_year_start_day: Number(form.fiscal_year_start_day),
       });
       setSuccess(true);
     } catch (err) {
@@ -114,6 +126,29 @@ export function ResidenceSettingsPage() {
             onChange={updateField('opening_balance')}
           />
         </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label={t('residenceSettings.fiscalYearMonthLabel')} htmlFor="fiscal_year_start_month">
+            <Select id="fiscal_year_start_month" value={form.fiscal_year_start_month} onChange={updateField('fiscal_year_start_month')}>
+              {(t('common.monthsFull', { returnObjects: true }) as string[]).map((label, index) => (
+                <option key={label} value={index + 1}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={t('residenceSettings.fiscalYearDayLabel')} htmlFor="fiscal_year_start_day">
+            <Input
+              id="fiscal_year_start_day"
+              type="number"
+              min={1}
+              max={31}
+              value={form.fiscal_year_start_day}
+              onChange={updateField('fiscal_year_start_day')}
+            />
+          </Field>
+        </div>
+        <p className="-mt-2 text-xs text-slate-500">{t('residenceSettings.fiscalYearHint')}</p>
 
         <Button type="submit" isLoading={isSubmitting} className="mt-2 self-start">
           <Save className="size-4" />

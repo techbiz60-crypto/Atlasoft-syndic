@@ -17,18 +17,26 @@ class TreasuryReportController extends Controller
 {
     /**
      * @param  Collection<int, object>  $records
-     * @return array<int, int> 12-slot array (index 0 = January) of summed amounts per month
+     * @return array<int, int> 12-slot array of summed amounts per month of the exercise, starting from $fiscalStart
      */
-    private function amountsByMonth($records, string $dateColumn): array
+    private function amountsByMonth($records, string $dateColumn, Carbon $fiscalStart): array
     {
         $amounts = array_fill(0, 12, 0);
 
         foreach ($records as $record) {
-            $month = $record->{$dateColumn}->month;
-            $amounts[$month - 1] += $record->amount;
+            $amounts[$this->monthIndex($record->{$dateColumn}, $fiscalStart)] += $record->amount;
         }
 
         return $amounts;
+    }
+
+    /**
+     * Position (0-11) of $date among the exercise's 12 consecutive months,
+     * counting from $fiscalStart rather than assuming January.
+     */
+    private function monthIndex(Carbon $date, Carbon $fiscalStart): int
+    {
+        return ($date->year - $fiscalStart->year) * 12 + ($date->month - $fiscalStart->month);
     }
 
     public function index(Request $request): JsonResponse
@@ -36,16 +44,23 @@ class TreasuryReportController extends Controller
         $year = $request->integer('year') ?: Carbon::now()->year;
         $residence = $request->user()->residence;
 
+        $yearStart = $residence->fiscalYearStartsOn($year);
+        $yearEnd = $residence->fiscalYearEndsOn($year);
+
         $cotisationsByMonth = $this->amountsByMonth(
-            Payment::whereYear('paid_at', $year)->get(['amount', 'paid_at']),
+            Payment::whereDate('paid_at', '>=', $yearStart)->whereDate('paid_at', '<', $yearEnd)->get(['amount', 'paid_at']),
             'paid_at',
+            $yearStart,
         );
 
         $revenueCategories = RevenueCategory::orderBy('name')->get()
-            ->map(function (RevenueCategory $category) use ($year) {
+            ->map(function (RevenueCategory $category) use ($yearStart, $yearEnd) {
                 $amounts = $this->amountsByMonth(
-                    Revenue::where('revenue_category_id', $category->id)->whereYear('received_at', $year)->get(['amount', 'received_at']),
+                    Revenue::where('revenue_category_id', $category->id)
+                        ->whereDate('received_at', '>=', $yearStart)->whereDate('received_at', '<', $yearEnd)
+                        ->get(['amount', 'received_at']),
                     'received_at',
+                    $yearStart,
                 );
 
                 return ['name' => $category->name, 'amounts' => $amounts];
@@ -54,10 +69,13 @@ class TreasuryReportController extends Controller
             ->values();
 
         $expenseCategories = ExpenseCategory::orderBy('sort_order')->orderBy('name')->get()
-            ->map(function (ExpenseCategory $category) use ($year) {
+            ->map(function (ExpenseCategory $category) use ($yearStart, $yearEnd) {
                 $amounts = $this->amountsByMonth(
-                    Expense::where('expense_category_id', $category->id)->whereYear('paid_at', $year)->get(['amount', 'paid_at']),
+                    Expense::where('expense_category_id', $category->id)
+                        ->whereDate('paid_at', '>=', $yearStart)->whereDate('paid_at', '<', $yearEnd)
+                        ->get(['amount', 'paid_at']),
                     'paid_at',
+                    $yearStart,
                 );
 
                 return ['name' => $category->name, 'amounts' => $amounts];
@@ -82,10 +100,10 @@ class TreasuryReportController extends Controller
         $netByMonth = [];
         $balanceByMonth = [];
 
-        // Cash held on 1 January of the displayed year, not the residence's
-        // very first balance — otherwise browsing a later year silently
-        // drops everything collected in the years in between.
-        $openingBalance = $residence->cashBalanceBefore(Carbon::create($year, 1, 1)->startOfDay());
+        // Cash held at the start of the exercise, not the residence's very
+        // first balance — otherwise browsing a later exercise silently
+        // drops everything collected in between.
+        $openingBalance = $residence->cashBalanceBefore($yearStart);
         $runningBalance = $openingBalance;
 
         for ($i = 0; $i < 12; $i++) {
@@ -95,8 +113,17 @@ class TreasuryReportController extends Controller
             $balanceByMonth[] = $runningBalance;
         }
 
+        // The 12 columns no longer necessarily line up with January-December
+        // — a custom fiscal year shifts them — so the frontend renders each
+        // one from its actual "Y-m" instead of a fixed month-name list.
+        $monthPeriods = [];
+        for ($i = 0; $i < 12; $i++) {
+            $monthPeriods[] = $yearStart->copy()->addMonthsNoOverflow($i)->format('Y-m');
+        }
+
         return response()->json([
             'year' => $year,
+            'month_periods' => $monthPeriods,
             'opening_balance' => $openingBalance,
             'cotisations' => $cotisationsByMonth,
             'revenue_categories' => $revenueCategories,

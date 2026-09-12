@@ -398,4 +398,48 @@ class AgReportTest extends TestCase
             ->assertOk()
             ->assertJsonPath('total_expenses', 0);
     }
+
+    /**
+     * Morocco's Décret 2.23.700 lets the AG fix any 12-month exercise, not
+     * necessarily the calendar year — a residence whose exercise starts in
+     * June must see June in column 0, not January.
+     */
+    public function test_a_custom_fiscal_year_shifts_which_month_is_column_zero(): void
+    {
+        $residence = Residence::factory()->create(['fiscal_year_start_month' => 6, 'fiscal_year_start_day' => 1]);
+        $admin = User::factory()->for($residence)->create();
+        $lot = $this->createLot($residence);
+
+        // Exercise "2026" for this residence runs June 2026 -> May 2027.
+        $fundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-06-01',
+        ]);
+        $fundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-06-15',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        // May 2026 predates this exercise's start, so it must NOT appear.
+        $priorFundCall = FundCall::factory()->for($residence)->for($lot)->create([
+            'amount' => 200,
+            'period' => '2026-05-01',
+        ]);
+        $priorFundCall->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-05-10',
+            'method' => PaymentMethod::Virement,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/reports/ag?year=2026');
+
+        $response->assertOk()
+            ->assertJsonPath('month_periods.0', '2026-06')
+            ->assertJsonPath('month_periods.11', '2027-05')
+            ->assertJsonPath('cotisations.0', 200)
+            ->assertJsonPath('total_income', 200);
+    }
 }

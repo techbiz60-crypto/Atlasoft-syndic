@@ -22,12 +22,19 @@ function formatAmount(amount: number): string {
   return amount.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+/** "2026-06" -> "Juin 26" — a custom fiscal year means the 12 columns aren't necessarily January-December. */
+function formatMonthPeriod(period: string, monthNames: string[]): string {
+  const [year, month] = period.split('-');
+  return `${monthNames[Number(month) - 1]} ${year.slice(2)}`;
+}
+
 export function TreasuryPage() {
   const { t } = useTranslation();
-  const monthLabels = t('common.monthsShort', { returnObjects: true }) as string[];
+  const rawMonthNames = t('common.monthsShort', { returnObjects: true }) as string[];
   const [year, setYear] = useState(currentYear);
   const [tab, setTab] = useState<Tab>('summary');
   const [report, setReport] = useState<TreasuryReport | null>(null);
+  const monthLabels = report ? report.month_periods.map((period) => formatMonthPeriod(period, rawMonthNames)) : [];
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

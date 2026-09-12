@@ -201,6 +201,8 @@ return [
         'email' => 'email',
         'expense_category_id' => 'catégorie de dépense',
         'floor' => 'étage',
+        'fiscal_year_start_month' => "mois de début d'exercice",
+        'fiscal_year_start_day' => "jour de début d'exercice",
         'grants' => 'droits accordés',
         'held_on' => "date de l'assemblée générale",
         'ids' => 'éléments sélectionnés',

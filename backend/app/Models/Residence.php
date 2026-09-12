@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
-#[Fillable(['name', 'address', 'lots_count', 'bank_rib', 'opening_balance', 'registration_ip'])]
+#[Fillable(['name', 'address', 'lots_count', 'bank_rib', 'opening_balance', 'registration_ip', 'fiscal_year_start_month', 'fiscal_year_start_day'])]
 class Residence extends Model
 {
     /** @use HasFactory<ResidenceFactory> */
@@ -118,10 +118,10 @@ class Residence extends Model
 
     /**
      * The moment exercise $year's books close: the date its AG was held, or
-     * January 1st of the following year by default when no AG has been
-     * recorded yet — the boundary the AG report always used before this
-     * concept existed, kept as the fallback so residences with no AG dates
-     * on file behave exactly as before.
+     * this exercise's own end date by default when no AG has been recorded
+     * yet — the boundary the AG report always used before this concept
+     * existed, kept as the fallback so residences with no AG dates on file
+     * behave exactly as before.
      *
      * Read only by the AG report — Trésorerie and the Grand livre are pure
      * cash-basis and must never be affected by when an AG happens.
@@ -130,7 +130,29 @@ class Residence extends Model
     {
         $heldOn = $this->generalAssemblies->firstWhere('exercise_year', $year)?->held_on;
 
-        return $heldOn ? $heldOn->copy()->startOfDay() : Carbon::create($year + 1, 1, 1)->startOfDay();
+        return $heldOn ? $heldOn->copy()->startOfDay() : $this->fiscalYearEndsOn($year);
+    }
+
+    /**
+     * Start of the 12-month accounting exercise labelled $year — 1 January
+     * by default, but Morocco's Décret 2.23.700 lets the AG fix any other
+     * date instead (fiscal_year_start_month/day on this model). $year
+     * always refers to the calendar year this exercise *starts* in.
+     */
+    public function fiscalYearStartsOn(int $year): Carbon
+    {
+        $daysInMonth = Carbon::create($year, $this->fiscal_year_start_month, 1)->daysInMonth;
+
+        return Carbon::create($year, $this->fiscal_year_start_month, min($this->fiscal_year_start_day, $daysInMonth))->startOfDay();
+    }
+
+    /**
+     * Exclusive end of exercise $year — exactly where exercise $year + 1
+     * begins, since a normal exercise always runs a full 12 months.
+     */
+    public function fiscalYearEndsOn(int $year): Carbon
+    {
+        return $this->fiscalYearStartsOn($year + 1);
     }
 
     public function subscription(): HasOne

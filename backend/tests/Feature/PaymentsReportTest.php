@@ -111,6 +111,38 @@ class PaymentsReportTest extends TestCase
         $response->assertOk()->assertJsonCount(1, 'rows');
     }
 
+    public function test_a_custom_fiscal_year_shifts_which_month_is_column_zero(): void
+    {
+        $residence = Residence::factory()->create(['fiscal_year_start_month' => 6, 'fiscal_year_start_day' => 1]);
+        $admin = User::factory()->for($residence)->create();
+        $building = Building::factory()->for($residence)->create();
+        $lot = $this->createLot($residence, $building, 200);
+
+        $june = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-06-01']);
+        $june->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-06-10',
+            'method' => PaymentMethod::Especes,
+        ]);
+
+        // Predates this exercise (starts June 2026) — must not appear in it.
+        $may = FundCall::factory()->for($residence)->for($lot)->create(['amount' => 200, 'period' => '2026-05-01']);
+        $may->payments()->create([
+            'residence_id' => $residence->id,
+            'amount' => 200,
+            'paid_at' => '2026-05-10',
+            'method' => PaymentMethod::Especes,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson("/api/reports/payments?year=2026&building_id={$building->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('month_periods.0', '2026-06')
+            ->assertJsonPath('rows.0.months.0', 200)
+            ->assertJsonPath('rows.0.months.11', null);
+    }
+
     public function test_conseil_member_can_view_the_report(): void
     {
         $residence = Residence::factory()->create();
