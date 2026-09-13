@@ -8,12 +8,14 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { Field, Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert, SuccessAlert } from '../components/ui/Alert';
+import { isWhiteLabelHost } from '../lib/whiteLabel';
 
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const whiteLabel = isWhiteLabelHost();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [email, setEmail] = useState('');
@@ -42,9 +44,11 @@ export function LoginPage() {
         <div className="mb-4 flex justify-end">
           <LanguageSwitcher />
         </div>
-        <div className="mb-8 flex justify-center">
-          <Logo />
-        </div>
+        {!whiteLabel && (
+          <div className="mb-8 flex justify-center">
+            <Logo />
+          </div>
+        )}
 
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
           <h1 className="mb-6 text-center text-xl font-bold text-slate-900">{t('auth.login.title')}</h1>
@@ -82,12 +86,14 @@ export function LoginPage() {
               {t('auth.login.submit')}
             </Button>
 
-            <p className="text-center text-sm text-slate-500">
-              {t('auth.login.noAccount')}{' '}
-              <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-700">
-                {t('auth.login.createResidence')}
-              </Link>
-            </p>
+            {!whiteLabel && (
+              <p className="text-center text-sm text-slate-500">
+                {t('auth.login.noAccount')}{' '}
+                <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+                  {t('auth.login.createResidence')}
+                </Link>
+              </p>
+            )}
           </form>
         </div>
       </div>

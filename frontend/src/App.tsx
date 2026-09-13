@@ -33,6 +33,7 @@ import { PaymentsReportPage } from './pages/PaymentsReportPage';
 import { AgReportPage } from './pages/AgReportPage';
 import { GuidePage } from './pages/GuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { isWhiteLabelHost } from './lib/whiteLabel';
 
 /**
  * The public landing page for guests — but a signed-in user landing on "/"
@@ -50,6 +51,10 @@ function HomeRoute() {
     return <Navigate to="/dashboard" replace />;
   }
 
+  if (isWhiteLabelHost()) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <LandingPage />;
 }
 
@@ -61,12 +66,18 @@ function App() {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
+  useEffect(() => {
+    if (isWhiteLabelHost()) {
+      document.title = 'Espace de connexion';
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<HomeRoute />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={isWhiteLabelHost() ? <Navigate to="/login" replace /> : <RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
