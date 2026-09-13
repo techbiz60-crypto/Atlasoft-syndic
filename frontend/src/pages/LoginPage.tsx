@@ -78,9 +78,11 @@ export function LoginPage() {
               />
             </Field>
 
-            <Link to="/mot-de-passe-oublie" className="-mt-2 text-end text-sm font-medium text-brand-600 hover:text-brand-700">
-              {t('auth.login.forgotPassword')}
-            </Link>
+            {!whiteLabel && (
+              <Link to="/mot-de-passe-oublie" className="-mt-2 text-end text-sm font-medium text-brand-600 hover:text-brand-700">
+                {t('auth.login.forgotPassword')}
+              </Link>
+            )}
 
             <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
               {t('auth.login.submit')}
