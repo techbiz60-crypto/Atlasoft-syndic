@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // (admin and trésorier) needs it, and the dates themselves aren't
         // sensitive. Only creating/removing one stays admin-only below.
         Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
+        Route::get('/general-assemblies/{year}/convocation', [GeneralAssemblyController::class, 'convocation']);
 
         Route::middleware(['subscription.active', 'active'])->group(function () {
             Route::middleware(['admin'])->group(function () {

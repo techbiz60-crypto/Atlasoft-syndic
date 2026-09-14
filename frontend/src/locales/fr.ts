@@ -522,6 +522,13 @@ export const fr = {
     savedMessage: 'Date enregistrée.',
     clearedMessage: 'Date supprimée — cet exercice redevient ouvert au 1er janvier suivant.',
     missingFields: "Renseignez l'année de l'exercice et la date de l'AG avant d'ajouter.",
+    convocationToggle: 'Lieu, ordre du jour et convocation →',
+    locationLabel: 'Lieu de la réunion',
+    timeLabel: 'Heure',
+    agendaLabel: "Ordre du jour (un point par ligne)",
+    agendaPlaceholder: 'Approbation des comptes\nVote du budget\nQuestions diverses',
+    sentAtLabel: 'Convocation envoyée le',
+    downloadButton: 'Télécharger la convocation',
   },
   users: {
     title: 'Utilisateurs',

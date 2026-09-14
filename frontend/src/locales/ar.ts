@@ -529,6 +529,13 @@ export const ar: TranslationResource = {
     savedMessage: 'تم حفظ التاريخ.',
     clearedMessage: 'تم حذف التاريخ — أصبحت هذه السنة المالية مفتوحة إلى غاية فاتح يناير الموالي.',
     missingFields: 'أدخلوا السنة المالية وتاريخ الجمعية العامة قبل الإضافة.',
+    convocationToggle: '← المكان وجدول الأعمال والاستدعاء',
+    locationLabel: 'مكان الاجتماع',
+    timeLabel: 'الساعة',
+    agendaLabel: 'جدول الأعمال (نقطة في كل سطر)',
+    agendaPlaceholder: 'المصادقة على الحسابات\nالتصويت على الميزانية\nمسائل متفرقة',
+    sentAtLabel: 'تاريخ إرسال الاستدعاء',
+    downloadButton: 'تحميل الاستدعاء',
   },
   users: {
     title: 'المستخدمون',

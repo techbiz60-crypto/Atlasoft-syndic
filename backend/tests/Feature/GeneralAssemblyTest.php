@@ -68,6 +68,62 @@ class GeneralAssemblyTest extends TestCase
         $this->actingAs($member)->getJson('/api/general-assemblies')->assertOk();
     }
 
+    public function test_admin_can_save_convocation_details_alongside_the_date(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+
+        $response = $this->actingAs($admin)->putJson('/api/general-assemblies/2026', [
+            'held_on' => '2027-01-31',
+            'location' => 'Salle des fêtes, rez-de-chaussée',
+            'meeting_time' => '18:30',
+            'agenda' => ['Approbation des comptes 2026', 'Vote du budget 2027', 'Élection du conseil syndical'],
+            'convocation_sent_at' => '2027-01-10',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.location', 'Salle des fêtes, rez-de-chaussée')
+            ->assertJsonPath('data.meeting_time', '18:30')
+            ->assertJsonPath('data.agenda', ['Approbation des comptes 2026', 'Vote du budget 2027', 'Élection du conseil syndical']);
+    }
+
+    public function test_convocation_pdf_can_be_downloaded_once_an_ag_is_recorded(): void
+    {
+        $residence = Residence::factory()->create(['name' => 'Résidence Test']);
+        $admin = User::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->putJson('/api/general-assemblies/2026', [
+            'held_on' => '2027-01-31',
+            'location' => 'Salle commune',
+            'meeting_time' => '18:00',
+            'agenda' => ['Approbation des comptes 2026'],
+        ])->assertOk();
+
+        $response = $this->actingAs($admin)->get('/api/general-assemblies/2026/convocation');
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_convocation_download_404s_when_no_ag_is_recorded_for_that_year(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+
+        $this->actingAs($admin)->get('/api/general-assemblies/2026/convocation')->assertNotFound();
+    }
+
+    public function test_conseil_member_can_download_the_convocation(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create();
+        $member = User::factory()->for($residence)->conseil()->create();
+
+        $this->actingAs($admin)->putJson('/api/general-assemblies/2026', ['held_on' => '2027-01-31'])->assertOk();
+
+        $this->actingAs($member)->get('/api/general-assemblies/2026/convocation')->assertOk();
+    }
+
     public function test_ag_dates_never_leak_across_residences(): void
     {
         $residenceA = Residence::factory()->create();

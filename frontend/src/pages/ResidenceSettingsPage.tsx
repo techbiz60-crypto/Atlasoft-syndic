@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Copy, Plus, Save, ShieldAlert, Trash2 } from 'lucide-react';
+import { Copy, FileDown, Plus, Save, ShieldAlert, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
@@ -11,6 +11,8 @@ import { Field, Input, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert, SuccessAlert } from '../components/ui/Alert';
 import { GENERAL_ASSEMBLIES_UPDATED_EVENT } from '../components/MissingAgDateBanner';
+
+const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8081';
 
 export function ResidenceSettingsPage() {
   const { t } = useTranslation();
@@ -165,20 +167,43 @@ export function ResidenceSettingsPage() {
 
 function GeneralAssembliesSection() {
   const { t } = useTranslation();
+  interface AssemblyDraft {
+    held_on: string;
+    location: string;
+    meeting_time: string;
+    /** One agenda point per line — split into an array only when saving. */
+    agenda: string;
+    convocation_sent_at: string;
+  }
+
   const [assemblies, setAssemblies] = useState<GeneralAssembly[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'saved' | 'cleared' | null>(null);
-  const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [drafts, setDrafts] = useState<Record<number, AssemblyDraft>>({});
   const [newYear, setNewYear] = useState('');
   const [newDate, setNewDate] = useState('');
+
+  function toDraft(assembly: GeneralAssembly): AssemblyDraft {
+    return {
+      held_on: assembly.held_on,
+      location: assembly.location ?? '',
+      meeting_time: assembly.meeting_time ?? '',
+      agenda: (assembly.agenda ?? []).join('\n'),
+      convocation_sent_at: assembly.convocation_sent_at ?? '',
+    };
+  }
+
+  function updateDraft(year: number, field: keyof AssemblyDraft, value: string) {
+    setDrafts((previous) => ({ ...previous, [year]: { ...previous[year], [field]: value } }));
+  }
 
   async function loadAssemblies() {
     setIsLoading(true);
     try {
       const { data } = await api.get<{ data: GeneralAssembly[] }>('/api/general-assemblies');
       setAssemblies(data.data);
-      setDrafts(Object.fromEntries(data.data.map((assembly) => [assembly.exercise_year, assembly.held_on])));
+      setDrafts(Object.fromEntries(data.data.map((assembly) => [assembly.exercise_year, toDraft(assembly)])));
 
       // Suggests the most recent past exercise that has no AG date yet —
       // the "Année" field otherwise only shows a placeholder ("2026") that
@@ -208,6 +233,30 @@ function GeneralAssembliesSection() {
       setFeedback('saved');
       await loadAssemblies();
       window.dispatchEvent(new Event(GENERAL_ASSEMBLIES_UPDATED_EVENT));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
+  }
+
+  async function saveConvocation(year: number) {
+    const draft = drafts[year];
+    if (!draft?.held_on) {
+      return;
+    }
+    setError(null);
+    try {
+      await api.put(`/api/general-assemblies/${year}`, {
+        held_on: draft.held_on,
+        location: draft.location || null,
+        meeting_time: draft.meeting_time || null,
+        agenda: draft.agenda
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean),
+        convocation_sent_at: draft.convocation_sent_at || null,
+      });
+      setFeedback('saved');
+      await loadAssemblies();
     } catch (err) {
       setError(extractErrorMessage(err));
     }
@@ -261,42 +310,114 @@ function GeneralAssembliesSection() {
         <p className="mt-4 text-sm text-slate-500">{t('common.loading')}</p>
       ) : (
         <div className="mt-4 flex flex-col gap-3">
-          {assemblies.map((assembly) => (
-            <div key={assembly.exercise_year} className="flex items-end gap-2">
-              <div className="w-24">
-                <Field label={t('generalAssemblies.yearLabel')} htmlFor={`ag-year-${assembly.exercise_year}`}>
-                  <Input id={`ag-year-${assembly.exercise_year}`} value={assembly.exercise_year} disabled />
-                </Field>
+          {assemblies.map((assembly) => {
+            const draft = drafts[assembly.exercise_year] ?? toDraft(assembly);
+
+            return (
+              <div key={assembly.exercise_year} className="rounded-lg border border-slate-100 p-3">
+                <div className="flex items-end gap-2">
+                  <div className="w-24">
+                    <Field label={t('generalAssemblies.yearLabel')} htmlFor={`ag-year-${assembly.exercise_year}`}>
+                      <Input id={`ag-year-${assembly.exercise_year}`} value={assembly.exercise_year} disabled />
+                    </Field>
+                  </div>
+                  <div className="flex-1">
+                    <Field label={t('generalAssemblies.dateLabel')} htmlFor={`ag-date-${assembly.exercise_year}`}>
+                      <Input
+                        id={`ag-date-${assembly.exercise_year}`}
+                        type="date"
+                        value={draft.held_on?.slice(0, 10) ?? ''}
+                        onChange={(event) => updateDraft(assembly.exercise_year, 'held_on', event.target.value)}
+                      />
+                    </Field>
+                  </div>
+                  <Button
+                    type="button"
+                    title={t('generalAssemblies.saveButton')}
+                    onClick={() => saveYear(assembly.exercise_year, draft.held_on)}
+                  >
+                    <Save className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    title={t('generalAssemblies.clearButton')}
+                    onClick={() => clearYear(assembly.exercise_year)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-xs font-semibold text-brand-600 hover:text-brand-700">
+                    {t('generalAssemblies.convocationToggle')}
+                  </summary>
+
+                  <div className="mt-3 flex flex-col gap-3 border-t border-slate-100 pt-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Field label={t('generalAssemblies.locationLabel')} htmlFor={`ag-location-${assembly.exercise_year}`}>
+                          <Input
+                            id={`ag-location-${assembly.exercise_year}`}
+                            value={draft.location}
+                            onChange={(event) => updateDraft(assembly.exercise_year, 'location', event.target.value)}
+                          />
+                        </Field>
+                      </div>
+                      <div className="w-28">
+                        <Field label={t('generalAssemblies.timeLabel')} htmlFor={`ag-time-${assembly.exercise_year}`}>
+                          <Input
+                            id={`ag-time-${assembly.exercise_year}`}
+                            type="time"
+                            value={draft.meeting_time}
+                            onChange={(event) => updateDraft(assembly.exercise_year, 'meeting_time', event.target.value)}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+
+                    <Field label={t('generalAssemblies.agendaLabel')} htmlFor={`ag-agenda-${assembly.exercise_year}`}>
+                      <textarea
+                        id={`ag-agenda-${assembly.exercise_year}`}
+                        rows={4}
+                        value={draft.agenda}
+                        onChange={(event) => updateDraft(assembly.exercise_year, 'agenda', event.target.value)}
+                        placeholder={t('generalAssemblies.agendaPlaceholder')}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                      />
+                    </Field>
+
+                    <div className="w-44">
+                      <Field label={t('generalAssemblies.sentAtLabel')} htmlFor={`ag-sent-${assembly.exercise_year}`}>
+                        <Input
+                          id={`ag-sent-${assembly.exercise_year}`}
+                          type="date"
+                          value={draft.convocation_sent_at?.slice(0, 10) ?? ''}
+                          onChange={(event) => updateDraft(assembly.exercise_year, 'convocation_sent_at', event.target.value)}
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button type="button" variant="secondary" onClick={() => saveConvocation(assembly.exercise_year)}>
+                        <Save className="size-4" />
+                        {t('generalAssemblies.saveButton')}
+                      </Button>
+                      <a
+                        href={`${apiUrl}/api/general-assemblies/${assembly.exercise_year}/convocation`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      >
+                        <FileDown className="size-4" />
+                        {t('generalAssemblies.downloadButton')}
+                      </a>
+                    </div>
+                  </div>
+                </details>
               </div>
-              <div className="flex-1">
-                <Field label={t('generalAssemblies.dateLabel')} htmlFor={`ag-date-${assembly.exercise_year}`}>
-                  <Input
-                    id={`ag-date-${assembly.exercise_year}`}
-                    type="date"
-                    value={drafts[assembly.exercise_year]?.slice(0, 10) ?? ''}
-                    onChange={(event) =>
-                      setDrafts((previous) => ({ ...previous, [assembly.exercise_year]: event.target.value }))
-                    }
-                  />
-                </Field>
-              </div>
-              <Button
-                type="button"
-                title={t('generalAssemblies.saveButton')}
-                onClick={() => saveYear(assembly.exercise_year, drafts[assembly.exercise_year] ?? '')}
-              >
-                <Save className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                title={t('generalAssemblies.clearButton')}
-                onClick={() => clearYear(assembly.exercise_year)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))}
+            );
+          })}
 
           <form onSubmit={handleAddYear} className="flex items-end gap-2 border-t border-slate-100 pt-3">
             <div className="w-24">

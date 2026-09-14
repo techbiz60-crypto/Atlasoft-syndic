@@ -19,6 +19,11 @@ class UpdateGeneralAssemblyRequest extends FormRequest
     {
         return [
             'held_on' => ['required', 'date'],
+            'location' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'meeting_time' => ['sometimes', 'nullable', 'date_format:H:i'],
+            'agenda' => ['sometimes', 'nullable', 'array'],
+            'agenda.*' => ['string', 'max:500'],
+            'convocation_sent_at' => ['sometimes', 'nullable', 'date'],
         ];
     }
 }

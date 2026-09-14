@@ -41,6 +41,10 @@ export type LotReferenceType = 'elevator_chip' | 'garage_number';
 export interface GeneralAssembly {
   exercise_year: number;
   held_on: string;
+  location: string | null;
+  meeting_time: string | null;
+  agenda: string[] | null;
+  convocation_sent_at: string | null;
 }
 
 export interface LotReferenceEntry {

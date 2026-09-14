@@ -19,11 +19,19 @@ use Illuminate\Support\Carbon;
  * from a prior exercise, not folded back into the closed one. See
  * Residence::agCutoffFor(), the only place this is read.
  */
-#[Fillable(['exercise_year', 'held_on'])]
+#[Fillable(['exercise_year', 'held_on', 'location', 'meeting_time', 'agenda', 'convocation_sent_at'])]
 class GeneralAssembly extends Model
 {
     /** @use HasFactory<GeneralAssemblyFactory> */
     use BelongsToTenant, HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'agenda' => 'array',
+            'convocation_sent_at' => 'date',
+        ];
+    }
 
     protected function heldOn(): Attribute
     {
