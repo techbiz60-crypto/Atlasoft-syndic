@@ -105,6 +105,19 @@ class GeneralAssemblyTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
     }
 
+    public function test_convocation_pdf_is_generated_in_arabic_for_an_arabic_locale_user(): void
+    {
+        $residence = Residence::factory()->create();
+        $admin = User::factory()->for($residence)->create(['locale' => 'ar']);
+
+        $this->actingAs($admin)->putJson('/api/general-assemblies/2026', ['held_on' => '2027-01-31'])->assertOk();
+
+        $response = $this->actingAs($admin)->get('/api/general-assemblies/2026/convocation');
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+    }
+
     public function test_convocation_download_404s_when_no_ag_is_recorded_for_that_year(): void
     {
         $residence = Residence::factory()->create();

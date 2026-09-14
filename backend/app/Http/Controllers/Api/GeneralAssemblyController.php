@@ -52,8 +52,9 @@ class GeneralAssemblyController extends Controller
     {
         $residence = $request->user()->residence;
         $assembly = $residence->generalAssemblies()->where('exercise_year', $year)->firstOrFail();
+        $isArabic = $request->user()->locale === 'ar';
 
-        $pdf = Pdf::loadView('convocations.general-assembly', [
+        $pdf = Pdf::loadView($isArabic ? 'convocations.general-assembly-ar' : 'convocations.general-assembly', [
             'residence' => $residence,
             'assembly' => $assembly,
             'year' => $year,
