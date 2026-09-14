@@ -59,7 +59,7 @@
         </tr>
         <tr>
             <td class="label">Heure</td>
-            <td class="value">{{ $assembly->meeting_time ?? 'À définir' }}</td>
+            <td class="value">{{ $assembly->meeting_time ? substr($assembly->meeting_time, 0, 5) : 'À définir' }}</td>
         </tr>
         <tr>
             <td class="label">Lieu</td>
