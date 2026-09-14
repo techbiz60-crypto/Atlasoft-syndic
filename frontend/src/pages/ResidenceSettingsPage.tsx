@@ -406,7 +406,7 @@ function GeneralAssembliesSection() {
                       <a
                         href={`${apiUrl}/api/general-assemblies/${assembly.exercise_year}/convocation`}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener"
                         className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                       >
                         <FileDown className="size-4" />
