@@ -649,6 +649,8 @@ export const fr = {
   subscriptionPage: {
     title: 'Mon abonnement',
     subtitle: "Le pack de votre résidence, votre statut d'abonnement et l'historique de vos factures.",
+    exportButton: 'Exporter mes données',
+    exportHint: 'Télécharge toutes vos données (appartements, cotisations, paiements, dépenses, recettes) et vos justificatifs, dans une archive ZIP.',
     planLabel: 'Pack actuel',
     priceLabel: 'Tarif',
     daysRemainingLabel: 'Jours restants',

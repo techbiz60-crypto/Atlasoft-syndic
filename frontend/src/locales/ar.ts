@@ -656,6 +656,8 @@ export const ar: TranslationResource = {
   subscriptionPage: {
     title: 'اشتراكي',
     subtitle: 'باقة إقامتكم، حالة اشتراككم، وسجل فواتيركم.',
+    exportButton: 'تصدير بياناتي',
+    exportHint: 'تحميل جميع بياناتكم (الشقق، الاشتراكات، المدفوعات، المصاريف، المداخيل) والوثائق المرفقة، في ملف ZIP واحد.',
     planLabel: 'الباقة الحالية',
     priceLabel: 'السعر',
     daysRemainingLabel: 'الأيام المتبقية',

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExpenseCategoryController;
 use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\FundCallController;
 use App\Http\Controllers\Api\GeneralAssemblyController;
 use App\Http\Controllers\Api\LedgerController;
@@ -80,6 +81,13 @@ Route::middleware('auth:sanctum')->group(function () {
         // sensitive. Only creating/removing one stays admin-only below.
         Route::get('/general-assemblies', [GeneralAssemblyController::class, 'index']);
         Route::get('/general-assemblies/{year}/convocation', [GeneralAssemblyController::class, 'convocation']);
+
+        // Deliberately outside subscription.active — a deactivated
+        // subscription is exactly when a residence most needs to get its
+        // data out, so this must never be blocked by that middleware.
+        Route::middleware(['admin'])->group(function () {
+            Route::get('/export', [ExportController::class, 'full']);
+        });
 
         Route::middleware(['subscription.active', 'active'])->group(function () {
             Route::middleware(['admin'])->group(function () {

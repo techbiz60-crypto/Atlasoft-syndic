@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarClock, MessageCircle, Receipt } from 'lucide-react';
+import { CalendarClock, Download, MessageCircle, Receipt } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { extractErrorMessage, useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ const statusClasses: Record<SubscriptionStatus, string> = {
 };
 
 const contactWhatsapp = import.meta.env.VITE_CONTACT_WHATSAPP_NUMBER;
+const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8081';
 
 export function SubscriptionPage() {
   const { t } = useTranslation();
@@ -80,7 +81,22 @@ export function SubscriptionPage() {
 
   return (
     <div>
-      <PageHeader title={t('subscriptionPage.title')} subtitle={t('subscriptionPage.subtitle')} />
+      <PageHeader
+        title={t('subscriptionPage.title')}
+        subtitle={t('subscriptionPage.subtitle')}
+        action={
+          <a
+            href={`${apiUrl}/api/export`}
+            target="_blank"
+            rel="noopener"
+            title={t('subscriptionPage.exportHint')}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            <Download className="size-4" />
+            {t('subscriptionPage.exportButton')}
+          </a>
+        }
+      />
 
       {error && (
         <div className="mb-4">
