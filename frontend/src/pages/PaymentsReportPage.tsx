@@ -149,7 +149,7 @@ export function PaymentsReportPage() {
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : report && report.rows.length > 0 ? (
-        <div className="print-bw print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <div className="print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
           <div className="hidden border-b border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 print:block">
             {report.building_name} — {report.year}
           </div>
