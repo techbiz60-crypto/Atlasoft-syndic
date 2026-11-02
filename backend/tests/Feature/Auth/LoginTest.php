@@ -71,4 +71,16 @@ class LoginTest extends TestCase
     {
         $this->getJson('/api/user')->assertUnauthorized();
     }
+
+    public function test_repeated_wrong_passwords_get_throttled(): void
+    {
+        User::factory()->create(['email' => 'admin@example.com']);
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson('/api/login', ['email' => 'admin@example.com', 'password' => 'wrong-password']);
+        }
+
+        $this->postJson('/api/login', ['email' => 'admin@example.com', 'password' => 'wrong-password'])
+            ->assertStatus(429);
+    }
 }
