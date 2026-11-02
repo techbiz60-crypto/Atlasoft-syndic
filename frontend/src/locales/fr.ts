@@ -388,6 +388,7 @@ export const fr = {
     printButton: 'Imprimer',
     exportButton: 'Exporter en PDF',
     exportHint: 'Choisissez « Enregistrer au format PDF » comme destination',
+    exportInstructions: 'Une fenêtre d\'impression va s\'ouvrir. Choisissez « Enregistrer au format PDF » comme destination/imprimante, puis cliquez sur « Enregistrer ».',
     colLot: 'N° lot',
     colOwner: 'Nom complet',
     colRemaining: 'Reste dû',

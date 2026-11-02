@@ -398,6 +398,7 @@ export const ar: TranslationResource = {
     printButton: 'طباعة',
     exportButton: 'تصدير إلى PDF',
     exportHint: 'اختاروا «الحفظ بصيغة PDF» كوجهة',
+    exportInstructions: 'ستفتح نافذة الطباعة. اختاروا «الحفظ بصيغة PDF» كوجهة/طابعة، ثم اضغطوا على «حفظ».',
     colLot: 'رقم الشقة',
     colOwner: 'الاسم الكامل',
     colRemaining: 'الباقي',

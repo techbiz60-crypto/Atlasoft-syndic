@@ -108,11 +108,22 @@ export function PaymentsReportPage() {
         action={
           report && (
             <div className="no-print flex flex-col items-end gap-1">
-              <Button type="button" variant="secondary" onClick={() => window.print()}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  // The small hint text under the button goes unnoticed, so
+                  // the system print dialog opening on click reads as "nothing
+                  // happened" — this blocking alert forces the instruction to
+                  // be seen right before that dialog appears.
+                  window.alert(t('paymentsReport.exportInstructions'));
+                  window.print();
+                }}
+              >
                 <FileDown className="size-4" />
                 {t('paymentsReport.exportButton')}
               </Button>
-              <span className="text-xs text-slate-400">{t('paymentsReport.exportHint')}</span>
+              <span className="text-xs font-medium text-slate-500">{t('paymentsReport.exportHint')}</span>
             </div>
           )
         }
