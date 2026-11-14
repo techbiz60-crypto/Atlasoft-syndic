@@ -4,6 +4,8 @@ import { api } from '../lib/api';
 import { extractErrorMessage } from '../context/AuthContext';
 import type { AgRecap, AgRecapLine } from '../types/resources';
 import { ErrorAlert } from './ui/Alert';
+import { PrintHeader } from './PrintHeader';
+import { PrintFooter } from './PrintFooter';
 
 function formatAmount(amount: number): string {
   return amount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -59,10 +61,13 @@ export function AgRecapTable({ year }: { year: number }) {
 
   return (
     <div>
-      <div className="print-bw overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
-        <div className="hidden border-b border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 print:block">
-          {t('agRecap.printTitle', { residence: recap.residence_name, year: recap.year })}
-        </div>
+      <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <PrintHeader
+          title={t('agReport.tabRecap')}
+          subtitle={t('agRecap.printTitle', { residence: recap.residence_name, year: recap.year })}
+          residenceName={recap.residence_name}
+          period={recap.year}
+        />
 
         <table className="w-full border-collapse text-start text-xs">
           <thead>
@@ -101,6 +106,7 @@ export function AgRecapTable({ year }: { year: number }) {
         </table>
 
         <p className="border-t border-slate-200 px-5 py-3 text-xs text-slate-500">{t('agRecap.basisNote')}</p>
+        <PrintFooter />
       </div>
     </div>
   );

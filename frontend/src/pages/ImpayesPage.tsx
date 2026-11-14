@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, MessageCircle } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Printer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { canManageFinances, extractErrorMessage, useAuth } from '../context/AuthContext';
 import type { UnpaidLot } from '../types/resources';
 import { PageHeader } from '../components/PageHeader';
+import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
 import { DataTable } from '../components/ui/DataTable';
 import type { DataTableColumn } from '../components/ui/DataTable';
 import { Field, Select } from '../components/ui/Input';
+import { PrintHeader } from '../components/PrintHeader';
+import { PrintFooter } from '../components/PrintFooter';
 
 type DelayFilter = 'all' | '3months' | '1year';
 
@@ -46,6 +49,11 @@ export function ImpayesPage() {
   const filteredLots = useMemo(
     () => unpaidLots.filter((lot) => lot.months_late >= delayThresholds[delayFilter]),
     [unpaidLots, delayFilter],
+  );
+
+  const totalUnpaid = useMemo(
+    () => filteredLots.reduce((acc, lot) => acc + lot.total_due, 0),
+    [filteredLots],
   );
 
   const columns: DataTableColumn<UnpaidLot>[] = [
@@ -107,16 +115,46 @@ export function ImpayesPage() {
   ];
 
   return (
-    <div>
-      <PageHeader title={t('impayes.title')} subtitle={t('impayes.subtitle')} />
+    <div className="print-portrait">
+      <PrintHeader
+        title={t('impayes.printTitle')}
+        subtitle={t('impayes.printSubtitle')}
+        residenceName={user?.residence?.name}
+        metrics={[
+          {
+            label: t('impayes.totalUnpaid'),
+            value: `${totalUnpaid.toLocaleString('fr-FR')} DH`,
+            highlight: true,
+          },
+          {
+            label: t('impayes.concernedLots'),
+            value: filteredLots.length,
+          },
+        ]}
+      />
+
+      <div className="no-print">
+        <PageHeader
+          title={t('impayes.title')}
+          subtitle={t('impayes.subtitle')}
+          action={
+            filteredLots.length > 0 && (
+              <Button type="button" variant="secondary" onClick={() => window.print()}>
+                <Printer className="size-4" />
+                {t('impayes.printButton')}
+              </Button>
+            )
+          }
+        />
+      </div>
 
       {error && (
-        <div className="mb-4">
+        <div className="no-print mb-4">
           <ErrorAlert>{error}</ErrorAlert>
         </div>
       )}
 
-      <div className="mb-5 max-w-[14rem]">
+      <div className="no-print mb-5 max-w-[14rem]">
         <Field label={t('impayes.delayFilterLabel')} htmlFor="impayes-delay-filter">
           <Select
             id="impayes-delay-filter"
@@ -162,6 +200,8 @@ export function ImpayesPage() {
             : undefined
         }
       />
+
+      <PrintFooter />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { Field, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
 import { AgRecapTable } from '../components/AgRecapTable';
+import { PrintHeader } from '../components/PrintHeader';
+import { PrintFooter } from '../components/PrintFooter';
 
 type Tab = 'account' | 'recap';
 
@@ -138,10 +140,18 @@ function AgAccount({
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : !report ? null : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
-          <div className="hidden border-b border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 print:block">
-            {report.residence_name} — {t('agReport.printTitle', { year: report.year })}
-          </div>
+        <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+          <PrintHeader
+            title={t('agReport.title')}
+            subtitle={t('agReport.printTitle', { year: report.year })}
+            residenceName={report.residence_name}
+            period={report.year}
+            metrics={[
+              { label: t('agReport.totalIncome'), value: `${formatAmount(sum(report.income_by_month))} DH` },
+              { label: t('agReport.totalExpenses'), value: `${formatAmount(sum(report.expenses_by_month))} DH` },
+              { label: t('agReport.closingRow', { year: report.year }), value: `${formatAmount(report.closing_balance)} DH`, highlight: report.closing_balance < 0 },
+            ]}
+          />
 
           <table className="w-full border-collapse text-start text-sm">
             <thead>
@@ -205,6 +215,7 @@ function AgAccount({
           </table>
 
           <p className="border-t border-slate-200 px-5 py-3 text-xs text-slate-500">{t('agReport.basisNote')}</p>
+          <PrintFooter />
         </div>
       )}
 

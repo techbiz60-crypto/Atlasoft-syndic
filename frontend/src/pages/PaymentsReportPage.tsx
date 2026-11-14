@@ -1,13 +1,15 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { FileDown } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
-import { extractErrorMessage } from '../context/AuthContext';
+import { extractErrorMessage, useAuth } from '../context/AuthContext';
 import type { Building, PaymentsReport, PaymentsReportRow } from '../types/resources';
 import { PageHeader } from '../components/PageHeader';
 import { Field, Select } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ErrorAlert } from '../components/ui/Alert';
+import { PrintHeader } from '../components/PrintHeader';
+import { PrintFooter } from '../components/PrintFooter';
 
 const currentYear = new Date().getFullYear();
 const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
@@ -63,6 +65,7 @@ function formatMonthPeriod(period: string, monthNames: string[]): string {
 }
 
 export function PaymentsReportPage() {
+  const { user } = useAuth();
   const { t } = useTranslation();
   const rawMonthNames = t('common.monthsFull', { returnObjects: true }) as string[];
 
@@ -111,16 +114,9 @@ export function PaymentsReportPage() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => {
-                  // The small hint text under the button goes unnoticed, so
-                  // the system print dialog opening on click reads as "nothing
-                  // happened" — this blocking alert forces the instruction to
-                  // be seen right before that dialog appears.
-                  window.alert(t('paymentsReport.exportInstructions'));
-                  window.print();
-                }}
+                onClick={() => window.print()}
               >
-                <FileDown className="size-4" />
+                <Printer className="size-4" />
                 {t('paymentsReport.exportButton')}
               </Button>
               <span className="text-xs font-medium text-slate-500">{t('paymentsReport.exportHint')}</span>
@@ -160,10 +156,13 @@ export function PaymentsReportPage() {
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : report && report.rows.length > 0 ? (
-        <div className="print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
-          <div className="hidden border-b border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 print:block">
-            {report.building_name} — {report.year}
-          </div>
+        <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+          <PrintHeader
+            title={t('paymentsReport.title')}
+            residenceName={user?.residence?.name}
+            buildingName={report.building_name}
+            period={report.year}
+          />
           <table className="w-full border-collapse text-start text-xs">
             <thead>
               <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -205,6 +204,7 @@ export function PaymentsReportPage() {
               ))}
             </tbody>
           </table>
+          <PrintFooter />
         </div>
       ) : (
         <p className="text-sm text-slate-500">{t('paymentsReport.emptyDesc')}</p>

@@ -148,7 +148,7 @@ export function DataTable<T>({
   return (
     <div className="flex flex-col gap-3">
       {(searchableText || pageSizeOptions.length > 0) && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="no-print flex flex-wrap items-center justify-between gap-3">
           {searchableText ? (
             <div className="relative max-w-sm grow">
               <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
@@ -188,7 +188,7 @@ export function DataTable<T>({
       ) : sorted.length === 0 ? (
         emptyState ?? null
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
           <table className="w-full text-start text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -221,7 +221,7 @@ export function DataTable<T>({
                     </th>
                   );
                 })}
-                {actions && <th className="px-5 py-3.5" />}
+                {actions && <th className="no-print px-5 py-3.5" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -236,7 +236,7 @@ export function DataTable<T>({
                     </td>
                   ))}
                   {actions && (
-                    <td className="px-5 py-3.5">
+                    <td className="no-print px-5 py-3.5">
                       <div className="flex justify-end gap-1.5">{actions(row)}</div>
                     </td>
                   )}
@@ -248,7 +248,7 @@ export function DataTable<T>({
       )}
 
       {!isLoading && sorted.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-sm text-slate-500">
+        <div className="no-print flex flex-wrap items-center justify-between gap-3 px-1 text-sm text-slate-500">
           {pageInfoLabel && <span>{pageInfoLabel(rangeFrom, rangeTo, sorted.length)}</span>}
 
           {totalPages > 1 && (
