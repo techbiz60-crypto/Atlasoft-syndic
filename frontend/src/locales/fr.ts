@@ -412,7 +412,6 @@ export const fr = {
     syndicStamp: 'Pour le Syndic de Copropriété',
     signatureStamp: 'Cachet & Signature',
     dateLabel: 'Date :',
-    systemNotice: 'Document édité via Atlasoft Syndic — Solution de gestion pour copropriétés',
   },
   expenses: {
     title: 'Dépenses',

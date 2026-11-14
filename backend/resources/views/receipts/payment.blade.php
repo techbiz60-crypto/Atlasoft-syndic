@@ -79,7 +79,7 @@
     @endif
 
     <div class="footer">
-        Reçu généré automatiquement par {{ config('app.name') }} — ne constitue pas une facture fiscale.
+        Reçu généré automatiquement — ne constitue pas une facture fiscale.
     </div>
 </body>
 </html>

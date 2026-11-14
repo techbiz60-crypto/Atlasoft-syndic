@@ -61,7 +61,7 @@ export function AgRecapTable({ year }: { year: number }) {
 
   return (
     <div>
-      <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+      <div className="print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
         <PrintHeader
           title={t('agReport.tabRecap')}
           subtitle={t('agRecap.printTitle', { residence: recap.residence_name, year: recap.year })}

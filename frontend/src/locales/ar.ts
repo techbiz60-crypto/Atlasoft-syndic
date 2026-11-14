@@ -422,7 +422,6 @@ export const ar: TranslationResource = {
     syndicStamp: 'عن وكيل اتحاد الملاك المشتركين (السنديك)',
     signatureStamp: 'الخاتم والتوقيع',
     dateLabel: 'بتاريخ :',
-    systemNotice: 'وثيقة مستخرجة عبر Atlasoft Syndic — نظام تدبير الملكية المشتركة',
   },
   expenses: {
     title: 'المصاريف',

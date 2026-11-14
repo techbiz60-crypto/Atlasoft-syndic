@@ -115,7 +115,7 @@ export function ImpayesPage() {
   ];
 
   return (
-    <div className="print-portrait">
+    <div>
       <PrintHeader
         title={t('impayes.printTitle')}
         subtitle={t('impayes.printSubtitle')}

@@ -57,18 +57,20 @@ export function AgReportPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t('agReport.title')}
-        subtitle={t('agReport.subtitle')}
-        action={
-          report && (
-            <Button type="button" variant="secondary" onClick={() => window.print()} className="no-print">
-              <Printer className="size-4" />
-              {t('agReport.printButton')}
-            </Button>
-          )
-        }
-      />
+      <div className="no-print">
+        <PageHeader
+          title={t('agReport.title')}
+          subtitle={t('agReport.subtitle')}
+          action={
+            report && (
+              <Button type="button" variant="secondary" onClick={() => window.print()} className="no-print">
+                <Printer className="size-4" />
+                {t('agReport.printButton')}
+              </Button>
+            )
+          }
+        />
+      </div>
 
       <div className="no-print mb-5 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-[10rem]">
@@ -140,7 +142,7 @@ function AgAccount({
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : !report ? null : (
-        <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <div className="print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
           <PrintHeader
             title={t('agReport.title')}
             subtitle={t('agReport.printTitle', { year: report.year })}

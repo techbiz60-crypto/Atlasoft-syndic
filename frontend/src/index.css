@@ -31,6 +31,15 @@ body {
     display: none !important;
   }
 
+  /* Reset layout constraints to prevent empty page 1 artifacts */
+  html, body, #root, main {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   /* Browsers strip background colors when printing by default unless told otherwise */
   *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
@@ -40,7 +49,7 @@ body {
   body {
     background-color: #ffffff !important;
     color: #0f172a !important;
-    font-size: 10.5pt !important;
+    font-size: 10pt !important;
   }
 
   /* Table rules for all printed tables */
@@ -117,25 +126,8 @@ body {
   }
 }
 
-/* Page orientation rules */
+/* Wide reports print in landscape by default with zero empty page breaks */
 @page {
-  margin: 8mm;
-}
-
-@page landscape-page {
   size: landscape;
   margin: 6mm 8mm;
-}
-
-@page portrait-page {
-  size: portrait;
-  margin: 10mm 8mm;
-}
-
-.print-landscape {
-  page: landscape-page;
-}
-
-.print-portrait {
-  page: portrait-page;
 }

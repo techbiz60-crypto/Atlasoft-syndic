@@ -9,7 +9,7 @@ export function PrintFooter({ showSignature = true, notes }: PrintFooterProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="hidden print:block print:mt-8 print:pt-4 print:border-t print:border-slate-300 print:break-inside-avoid">
+    <div className="hidden print:block print:mt-6 print:pt-4 print:border-t print:border-slate-300 print:break-inside-avoid">
       {notes && (
         <div className="mb-4 text-xs italic text-slate-500">
           * {notes}
@@ -32,11 +32,6 @@ export function PrintFooter({ showSignature = true, notes }: PrintFooterProps) {
           </div>
         </div>
       )}
-
-      <div className="flex items-center justify-between text-[9px] text-slate-400 pt-2">
-        <span>{t('print.systemNotice', { defaultValue: 'Atlasoft Syndic — Solution de gestion pour copropriétés' })}</span>
-        <span>https://syndic.atlasoft.app</span>
-      </div>
     </div>
   );
 }

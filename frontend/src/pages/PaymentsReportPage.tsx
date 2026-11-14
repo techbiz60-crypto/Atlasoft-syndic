@@ -106,24 +106,26 @@ export function PaymentsReportPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t('paymentsReport.title')}
-        action={
-          report && (
-            <div className="no-print flex flex-col items-end gap-1">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => window.print()}
-              >
-                <Printer className="size-4" />
-                {t('paymentsReport.exportButton')}
-              </Button>
-              <span className="text-xs font-medium text-slate-500">{t('paymentsReport.exportHint')}</span>
-            </div>
-          )
-        }
-      />
+      <div className="no-print">
+        <PageHeader
+          title={t('paymentsReport.title')}
+          action={
+            report && (
+              <div className="no-print flex flex-col items-end gap-1">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="size-4" />
+                  {t('paymentsReport.exportButton')}
+                </Button>
+                <span className="text-xs font-medium text-slate-500">{t('paymentsReport.exportHint')}</span>
+              </div>
+            )
+          }
+        />
+      </div>
 
       <div className="no-print mb-5 flex flex-wrap items-end gap-3">
         <Field label={t('paymentsReport.buildingLabel')} htmlFor="report-building">
@@ -156,7 +158,7 @@ export function PaymentsReportPage() {
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : report && report.rows.length > 0 ? (
-        <div className="print-landscape print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
+        <div className="print-compact overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-0 print:shadow-none">
           <PrintHeader
             title={t('paymentsReport.title')}
             residenceName={user?.residence?.name}
